@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Website</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      background: #fff;
+      border-bottom: 1.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      height: 90px;
+      gap: 4px;
+    }
+
+    nav .brand {
+      margin-right: 24px;
+    }
+
+    nav .brand img {
+      height: 80px;
+      width: auto;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      color: #555;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+      font-weight: 500;
+    }
+
+    nav button:hover {
+      background: #f0f2f5;
+      color: #1a1a1a;
+    }
+
+    nav button.active {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    /* ── Pages ── */
+    .page {
+      display: none;
+      padding: 48px 16px;
+      justify-content: center;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    /* ── Home ── */
+    .home-content {
+      max-width: 720px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .home-content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+
+    .home-content p {
+      font-size: 1.1rem;
+      color: #555;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .home-content button {
+      padding: 12px 28px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .home-content button:hover {
+      background: #4f46e5;
+    }
+
+    /* ── Projects ── */
+    .projects-content {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .projects-content h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+
+    .project-section {
+      margin-bottom: 32px;
+    }
+
+    .project-section h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #6366f1;
+      margin-bottom: 16px;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .project-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-card:hover {
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      border-color: #6366f1;
+    }
+
+    .project-card h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .project-card p {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .project-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .project-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 12px;
+    }
+
+    .badge-ongoing {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-planned {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-completed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* ── Modal ── */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+
+    .modal-field {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-field label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .modal-field input,
+    .modal-field select,
+    .modal-field textarea {
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .modal-field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus,
+    .modal-field textarea:focus {
+      border-color: #6366f1;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+
+    .modal-buttons button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .modal-buttons .btn-primary {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .modal-buttons .btn-primary:hover {
+      background: #4f46e5;
+    }
+
+    .modal-buttons .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .modal-buttons .btn-secondary:hover {
+      background: #e5e5e5;
+    }
+
+    .add-project-btn {
+      padding: 12px 28px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 32px;
+    }
+
+    .add-project-btn:hover {
+      background: #4f46e5;
+    }
+
+    .project-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* ── To Do Chart ── */
+    .todo-stats {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 32px;
+      align-items: center;
+    }
+
+    .chart-container {
+      flex: 0 0 250px;
+      height: 250px;
+      position: relative;
+    }
+
+    .stats-info {
+      flex: 1;
+    }
+
+    .stats-info h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .stat-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+
+    .stat-color.completed {
+      background: #4f46e5;
+    }
+
+    .stat-color.remaining {
+      background: #d1d5db;
+    }
+
+    /* ── To Do ── */
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 32px;
+      width: 100%;
+      max-width: 960px;
+      height: fit-content;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-row input:focus {
+      border-color: #6366f1;
+    }
+
+    .input-row button {
+      padding: 10px 18px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .input-row button:hover {
+      background: #4f46e5;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filters button {
+      padding: 5px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 20px;
+      background: transparent;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: #555;
+    }
+
+    .filters button.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    li input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #6366f1;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    li .text {
+      flex: 1;
+      font-size: 0.95rem;
+      color: #1a1a1a;
+      word-break: break-word;
+    }
+
+    li.done .text {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+
+    li .delete {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    li .delete:hover {
+      color: #ef4444;
+    }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.9rem;
+      padding: 32px 0;
+    }
+
+    .footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #aaa;
+    }
+
+    .footer button {
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+
+    .footer button:hover {
+      color: #ef4444;
+    }
+
+    /* ── Calculator ── */
+    .calculator-container {
+      max-width: 400px;
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 24px;
+    }
+
+    .calc-display {
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 2.5rem;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: right;
+      margin-bottom: 16px;
+      word-wrap: break-word;
+      word-break: break-all;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-weight: 600;
+    }
+
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .calc-btn {
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #f0f0f0;
+      color: #1a1a1a;
+    }
+
+    .calc-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .calc-btn.operator {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .calc-btn.operator:hover {
+      background: #4f46e5;
+    }
+
+    .calc-btn.equals {
+      background: #10b981;
+      color: #fff;
+      grid-column: span 2;
+    }
+
+    .calc-btn.equals:hover {
+      background: #059669;
+    }
+
+    .calc-btn.clear {
+      background: #ef4444;
+      color: #fff;
+      grid-column: span 2;
+    }
+
+    .calc-btn.clear:hover {
+      background: #dc2626;
+    }
+
+    /* ── IMG Convert ── */
+    .convert-container {
+      max-width: 720px;
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 32px;
+    }
+
+    .convert-section {
+      margin-bottom: 32px;
+    }
+
+    .convert-section h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .upload-area:hover {
+      border-color: #6366f1;
+      background: #f8f9ff;
+    }
+
+    .upload-area.active {
+      border-color: #6366f1;
+      background: #f8f9ff;
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    .upload-text {
+      color: #555;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #aaa;
+      font-size: 0.85rem;
+    }
+
+    .preview-img {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 16px 0;
+      border-radius: 8px;
+    }
+
+    .format-select {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .format-btn {
+      padding: 10px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      color: #555;
+    }
+
+    .format-btn:hover {
+      border-color: #6366f1;
+      color: #6366f1;
+    }
+
+    .format-btn.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    .convert-btn {
+      padding: 12px 28px;
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .convert-btn:hover:not(:disabled) {
+      background: #059669;
+    }
+
+    .convert-btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      text-align: center;
+      display: none;
+    }
+
+    .status-message.success {
+      background: #dcfce7;
+      color: #166534;
+      display: block;
+    }
+
+    .status-message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <span class="brand"><img src="images/jakes_website.png" alt="Jake's Website"></span>
+    <button class="active" onclick="showPage('home', this)">Home</button>
+    <button onclick="showPage('todo', this)">To Do</button>
+    <button onclick="showPage('projects', this)">Projects</button>
+    <button onclick="showPage('calculator', this)">Calculator</button>
+    <button onclick="showPage('imgconvert', this)">IMG Convert</button>
+  </nav>
+
+  <!-- Home Page -->
+  <div class="page active" id="page-home">
+    <div class="home-content">
+      <h1>Welcome</h1>
+      <p>This is your personal website. Use the tabs above to navigate between pages.</p>
+      <button onclick="showPage('todo', document.querySelector('nav button:nth-child(3)'))">Open To Do List</button>
+    </div>
+  </div>
+
+  <!-- To Do Page -->
+  <div class="page" id="page-todo">
+    <div class="container">
+      <h2>To Do List</h2>
+
+      <div class="todo-stats">
+        <div class="chart-container">
+          <canvas id="todoChart"></canvas>
+        </div>
+        <div class="stats-info">
+          <h3>Progress</h3>
+          <div class="stat-item">
+            <span class="stat-color completed"></span>
+            <span><strong id="completedCount">0</strong> completed</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-color remaining"></span>
+            <span><strong id="remainingCount">0</strong> remaining</span>
+          </div>
+          <div class="stat-item" style="margin-top: 16px; font-size: 1rem;">
+            <strong id="totalCount">0</strong> total tasks
+          </div>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="taskInput" placeholder="Add a new task..." />
+        <button onclick="addTask()">Add</button>
+      </div>
+      <div class="filters">
+        <button class="active" onclick="setFilter('all', this)">All</button>
+        <button onclick="setFilter('active', this)">Active</button>
+        <button onclick="setFilter('done', this)">Done</button>
+      </div>
+      <ul id="taskList"></ul>
+      <div class="empty" id="emptyMsg" style="display:none">No tasks here.</div>
+      <div class="footer">
+        <span id="countMsg"></span>
+        <button onclick="clearDone()">Clear completed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Page -->
+  <div class="page" id="page-projects">
+    <div class="projects-content">
+      <h2>Projects</h2>
+      <button class="add-project-btn" onclick="openProjectModal()">+ Add Project</button>
+
+      <div class="project-section">
+        <h3>Ongoing</h3>
+        <div class="project-grid" id="ongoing-grid"></div>
+      </div>
+
+      <div class="project-section">
+        <h3>Planned</h3>
+        <div class="project-grid" id="planned-grid"></div>
+      </div>
+
+      <div class="project-section">
+        <h3>Completed</h3>
+        <div class="project-grid" id="completed-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div class="modal" id="projectModal">
+    <div class="modal-content">
+      <h3>Add New Project</h3>
+
+      <div class="modal-field">
+        <label>Project Image</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input type="text" id="modalProjectImage" placeholder="https://example.com/image.jpg" style="flex: 1;" />
+          <input type="file" id="modalProjectFile" accept="image/*" style="display: none;" onchange="handleFileSelect(event)" />
+          <button type="button" onclick="document.getElementById('modalProjectFile').click()" style="padding: 10px 14px; background: #f0f0f0; border: 1.5px solid #d1d5db; border-radius: 8px; cursor: pointer; font-size: 0.95rem;">Browse</button>
+        </div>
+        <small id="fileName" style="color: #aaa; font-size: 0.85rem;"></small>
+      </div>
+
+      <div class="modal-field">
+        <label>Project Name</label>
+        <input type="text" id="modalProjectName" placeholder="Enter project name" />
+      </div>
+
+      <div class="modal-field">
+        <label>Description</label>
+        <textarea id="modalProjectDesc" placeholder="Enter project description"></textarea>
+      </div>
+
+      <div class="modal-field">
+        <label>Status</label>
+        <select id="modalProjectStatus">
+          <option value="ongoing">Ongoing</option>
+          <option value="planned">Planned</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeProjectModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveProject()">Create Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteConfirmModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <h3>Delete Project?</h3>
+      <p id="deleteConfirmText" style="color: #555; margin-bottom: 24px;"></p>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="cancelDelete()">Cancel</button>
+        <button class="btn-primary" style="background: #ef4444;" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Page -->
+  <div class="page" id="page-calculator">
+    <div class="calculator-container">
+      <div style="color: #1a1a1a; font-size: 0.9rem; text-align: right; min-height: 20px; margin-bottom: 8px;" id="calcEquation"></div>
+      <div class="calc-display" id="calcDisplay">0</div>
+      <div class="calc-buttons">
+        <button class="calc-btn clear" onclick="calcClear()">AC</button>
+        <button class="calc-btn operator" onclick="calcOperator('/')">/</button>
+        <button class="calc-btn operator" onclick="calcOperator('*')">×</button>
+
+        <button class="calc-btn" onclick="calcAppend('7')">7</button>
+        <button class="calc-btn" onclick="calcAppend('8')">8</button>
+        <button class="calc-btn" onclick="calcAppend('9')">9</button>
+        <button class="calc-btn operator" onclick="calcOperator('-')">−</button>
+
+        <button class="calc-btn" onclick="calcAppend('4')">4</button>
+        <button class="calc-btn" onclick="calcAppend('5')">5</button>
+        <button class="calc-btn" onclick="calcAppend('6')">6</button>
+        <button class="calc-btn operator" onclick="calcOperator('+')">+</button>
+
+        <button class="calc-btn" onclick="calcAppend('1')">1</button>
+        <button class="calc-btn" onclick="calcAppend('2')">2</button>
+        <button class="calc-btn" onclick="calcAppend('3')">3</button>
+        <button class="calc-btn" onclick="calcAppend('.')">.</button>
+
+        <button class="calc-btn" onclick="calcAppend('0')" style="grid-column: span 2;">0</button>
+        <button class="calc-btn equals" onclick="calcEquals()">=</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMG Convert Page -->
+  <div class="page" id="page-imgconvert">
+    <div class="convert-container">
+      <h2>Image Converter</h2>
+
+      <div class="convert-section">
+        <h3>Select Image</h3>
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('imgInput').click()">
+          <input type="file" id="imgInput" accept="image/*" onchange="handleImageSelect(event)" />
+          <div class="upload-text">Click to select or drag and drop image</div>
+          <div class="upload-hint">Supports: JPG, PNG, GIF, WebP, BMP</div>
+          <img id="previewImg" class="preview-img" style="display: none;" />
+          <div id="imageName" style="color: #aaa; font-size: 0.85rem;"></div>
+        </div>
+      </div>
+
+      <div class="convert-section" id="formatSection" style="display: none;">
+        <h3>Convert To</h3>
+        <div class="format-select" id="formatSelect"></div>
+        <button class="convert-btn" id="convertBtn" onclick="convertImage()">Convert</button>
+        <div id="statusMsg" class="status-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Tab routing ──
+    function showPage(id, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // ── To Do ──
+    let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    let filter = 'all';
+
+    const input = document.getElementById('taskInput');
+    const list = document.getElementById('taskList');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const countMsg = document.getElementById('countMsg');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+    function save() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function addTask() {
+      const text = input.value.trim();
+      if (!text) return;
+      tasks.push({ id: Date.now(), text, done: false });
+      input.value = '';
+      save();
+      render();
+    }
+
+    function toggleTask(id) {
+      const t = tasks.find(t => t.id === id);
+      if (t) t.done = !t.done;
+      save();
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      save();
+      render();
+    }
+
+    function clearDone() {
+      tasks = tasks.filter(t => !t.done);
+      save();
+      render();
+    }
+
+    function setFilter(f, btn) {
+      filter = f;
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    }
+
+    let todoChart = null;
+
+    function updateChart() {
+      const completed = tasks.filter(t => t.done).length;
+      const remaining = tasks.filter(t => !t.done).length;
+      const total = tasks.length;
+
+      document.getElementById('completedCount').textContent = completed;
+      document.getElementById('remainingCount').textContent = remaining;
+      document.getElementById('totalCount').textContent = total;
+
+      const ctx = document.getElementById('todoChart');
+      if (ctx) {
+        if (todoChart) todoChart.destroy();
+        todoChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Completed', 'Remaining'],
+            datasets: [{
+              data: [completed, remaining],
+              backgroundColor: ['#4f46e5', '#d1d5db'],
+              borderColor: '#fff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function render() {
+      const visible = tasks.filter(t =>
+        filter === 'all' ? true : filter === 'done' ? t.done : !t.done
+      );
+
+      list.innerHTML = '';
+      visible.forEach(t => {
+        const li = document.createElement('li');
+        if (t.done) li.classList.add('done');
+        li.innerHTML = `
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})">
+          <span class="text">${escapeHtml(t.text)}</span>
+          <button class="delete" onclick="deleteTask(${t.id})">&#x2715;</button>
+        `;
+        list.appendChild(li);
+      });
+
+      emptyMsg.style.display = visible.length === 0 ? 'block' : 'none';
+      const remaining = tasks.filter(t => !t.done).length;
+      countMsg.textContent = `${remaining} task${remaining !== 1 ? 's' : ''} remaining`;
+      updateChart();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Projects ──
+    let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+
+    function saveProjects() {
+      localStorage.setItem('projects', JSON.stringify(projects));
+    }
+
+    let editingProjectId = null;
+
+    function openProjectModal() {
+      editingProjectId = null;
+      document.querySelector('#projectModal h3').textContent = 'Add New Project';
+      document.querySelector('#projectModal .btn-primary').textContent = 'Create Project';
+      document.getElementById('projectModal').classList.add('active');
+    }
+
+    function editProject(id) {
+      const project = projects.find(p => p.id === id);
+      if (project) {
+        editingProjectId = id;
+        document.getElementById('modalProjectImage').value = project.image || '';
+        document.getElementById('modalProjectName').value = project.name;
+        document.getElementById('modalProjectDesc').value = project.description;
+        document.getElementById('modalProjectStatus').value = project.status;
+        document.querySelector('#projectModal h3').textContent = 'Edit Project';
+        document.querySelector('#projectModal .btn-primary').textContent = 'Save Changes';
+        document.getElementById('fileName').textContent = '';
+        document.getElementById('projectModal').classList.add('active');
+      }
+    }
+
+    function closeProjectModal() {
+      document.getElementById('projectModal').classList.remove('active');
+      document.getElementById('modalProjectImage').value = '';
+      document.getElementById('modalProjectFile').value = '';
+      document.getElementById('modalProjectName').value = '';
+      document.getElementById('modalProjectDesc').value = '';
+      document.getElementById('modalProjectStatus').value = 'ongoing';
+      document.getElementById('fileName').textContent = '';
+      editingProjectId = null;
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById('modalProjectImage').value = event.target.result;
+          document.getElementById('fileName').textContent = 'Selected: ' + file.name;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function saveProject() {
+      const image = document.getElementById('modalProjectImage').value.trim();
+      const name = document.getElementById('modalProjectName').value.trim();
+      const desc = document.getElementById('modalProjectDesc').value.trim();
+      const status = document.getElementById('modalProjectStatus').value;
+
+      if (!name || !desc) return;
+
+      if (editingProjectId !== null) {
+        const project = projects.find(p => p.id === editingProjectId);
+        if (project) {
+          project.image = image;
+          project.name = name;
+          project.description = desc;
+          project.status = status;
+        }
+      } else {
+        projects.push({ id: Date.now(), image, name, description: desc, status });
+      }
+
+      saveProjects();
+      renderProjects();
+      closeProjectModal();
+    }
+
+    let projectToDelete = null;
+
+    function deleteProject(id) {
+      const project = projects.find(p => p.id === id);
+      if (project) {
+        projectToDelete = id;
+        document.getElementById('deleteConfirmText').textContent = `Are you sure you want to delete "${escapeHtml(project.name)}"? This action cannot be undone.`;
+        document.getElementById('deleteConfirmModal').classList.add('active');
+      }
+    }
+
+    function confirmDelete() {
+      if (projectToDelete !== null) {
+        projects = projects.filter(p => p.id !== projectToDelete);
+        saveProjects();
+        renderProjects();
+        cancelDelete();
+      }
+    }
+
+    function cancelDelete() {
+      projectToDelete = null;
+      document.getElementById('deleteConfirmModal').classList.remove('active');
+    }
+
+    function renderProjects() {
+      const ongoingGrid = document.getElementById('ongoing-grid');
+      const plannedGrid = document.getElementById('planned-grid');
+      const completedGrid = document.getElementById('completed-grid');
+
+      ongoingGrid.innerHTML = '';
+      plannedGrid.innerHTML = '';
+      completedGrid.innerHTML = '';
+
+      projects.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        let imageHtml = '';
+        if (p.image) {
+          imageHtml = `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" />`;
+        }
+        card.innerHTML = `
+          ${imageHtml}
+          <h4>${escapeHtml(p.name)}</h4>
+          <p>${escapeHtml(p.description)}</p>
+          <div class="project-footer">
+            <span class="project-badge badge-${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="delete" onclick="editProject(${p.id})" style="background: none; border: none; cursor: pointer; padding: 0; width: 20px; height: 20px;"><img src="images/edit_icon.png" alt="edit" style="width: 100%; height: 100%;"></button>
+              <button class="delete" onclick="deleteProject(${p.id})" style="background: none; border: none; cursor: pointer; padding: 0; width: 20px; height: 20px;"><img src="images/trash_icon.png" alt="delete" style="width: 100%; height: 100%;"></button>
+            </div>
+          </div>
+        `;
+
+        if (p.status === 'ongoing') ongoingGrid.appendChild(card);
+        else if (p.status === 'planned') plannedGrid.appendChild(card);
+        else if (p.status === 'completed') completedGrid.appendChild(card);
+      });
+    }
+
+    document.getElementById('projectModal').addEventListener('click', (e) => {
+      if (e.target.id === 'projectModal') closeProjectModal();
+    });
+
+    document.getElementById('deleteConfirmModal').addEventListener('click', (e) => {
+      if (e.target.id === 'deleteConfirmModal') cancelDelete();
+    });
+
+    // ── Calculator ──
+    let calcDisplay = document.getElementById('calcDisplay');
+    let calcEquation = document.getElementById('calcEquation');
+    let calcValue = '0';
+    let calcPrevValue = '';
+    let calcOperation = null;
+    let calcShouldReset = false;
+
+    const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+    function calcUpdateDisplay() {
+      calcDisplay.textContent = calcValue;
+    }
+
+    function calcUpdateEquation() {
+      if (calcOperation && calcPrevValue) {
+        calcEquation.textContent = `${calcPrevValue} ${opSymbols[calcOperation]} ${calcValue}`;
+      } else {
+        calcEquation.textContent = '';
+      }
+    }
+
+    function calcAppend(value) {
+      if (calcShouldReset) {
+        calcValue = value === '.' ? '0.' : value;
+        calcShouldReset = false;
+      } else {
+        if (value === '.') {
+          if (!calcValue.includes('.')) calcValue += '.';
+        } else if (calcValue === '0' && value !== '.') {
+          calcValue = value;
+        } else {
+          calcValue += value;
+        }
+      }
+      calcUpdateDisplay();
+      calcUpdateEquation();
+    }
+
+    function calcOperator(op) {
+      if (calcOperation !== null) calcEquals();
+      calcPrevValue = calcValue;
+      calcOperation = op;
+      calcShouldReset = true;
+      calcUpdateEquation();
+    }
+
+    function calcEquals() {
+      if (calcOperation === null || calcShouldReset) return;
+      let result;
+      const prev = parseFloat(calcPrevValue);
+      const current = parseFloat(calcValue);
+      if (calcOperation === '+') result = prev + current;
+      else if (calcOperation === '-') result = prev - current;
+      else if (calcOperation === '*') result = prev * current;
+      else if (calcOperation === '/') result = prev / current;
+      else return;
+      calcEquation.textContent = `${calcPrevValue} ${opSymbols[calcOperation]} ${calcValue} = ${result}`;
+      calcValue = result.toString();
+      calcPrevValue = '';
+      calcOperation = null;
+      calcShouldReset = true;
+      calcUpdateDisplay();
+    }
+
+    function calcClear() {
+      calcValue = '0';
+      calcPrevValue = '';
+      calcOperation = null;
+      calcShouldReset = false;
+      calcEquation.textContent = '';
+      calcUpdateDisplay();
+    }
+
+    // ── IMG Convert ──
+    let selectedImage = null;
+    let selectedFormat = 'png';
+    const formats = ['png', 'jpg', 'webp', 'gif', 'bmp'];
+
+    function initFormatButtons() {
+      const formatSelect = document.getElementById('formatSelect');
+      formats.forEach(fmt => {
+        const btn = document.createElement('button');
+        btn.className = 'format-btn';
+        if (fmt === 'png') btn.classList.add('active');
+        btn.textContent = fmt.toUpperCase();
+        btn.onclick = () => selectFormat(fmt, btn);
+        formatSelect.appendChild(btn);
+      });
+    }
+
+    function selectFormat(fmt, btn) {
+      selectedFormat = fmt;
+      document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function handleImageSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          selectedImage = new Image();
+          selectedImage.onload = () => {
+            document.getElementById('previewImg').src = event.target.result;
+            document.getElementById('previewImg').style.display = 'block';
+            document.getElementById('imageName').textContent = file.name;
+            document.getElementById('formatSection').style.display = 'block';
+            document.getElementById('statusMsg').textContent = '';
+            document.getElementById('statusMsg').className = 'status-message';
+          };
+          selectedImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function convertImage() {
+      if (!selectedImage) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = selectedImage.width;
+      canvas.height = selectedImage.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(selectedImage, 0, 0);
+
+      let mimeType = 'image/png';
+      if (selectedFormat === 'jpg') mimeType = 'image/jpeg';
+      else if (selectedFormat === 'webp') mimeType = 'image/webp';
+      else if (selectedFormat === 'gif') mimeType = 'image/gif';
+      else if (selectedFormat === 'bmp') mimeType = 'image/bmp';
+
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `image.${selectedFormat}`;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        const statusMsg = document.getElementById('statusMsg');
+        statusMsg.textContent = `✓ Converted to ${selectedFormat.toUpperCase()}`;
+        statusMsg.className = 'status-message success';
+      }, mimeType);
+    }
+
+    initFormatButtons();
+    render();
+    renderProjects();
+  </script>
+</body>
+</html>
