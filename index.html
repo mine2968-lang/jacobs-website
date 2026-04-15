@@ -841,6 +841,25 @@
       line-height: 1;
     }
 
+    /* ── Export/Import ── */
+    .nav-data-btn {
+      margin-left: auto;
+      padding: 6px 14px;
+      background: none;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nav-data-btn:hover {
+      border-color: #6366f1;
+      color: #6366f1;
+    }
+
     /* ── Clips ── */
     .clips-content {
       max-width: 1400px;
@@ -917,6 +936,7 @@
     <button onclick="showPage('imgconvert', this)">IMG Convert</button>
     <button onclick="showPage('screenshots', this)">Screenshots</button>
     <button onclick="showPage('clips', this)">Clips</button>
+    <button class="nav-data-btn" onclick="openDataModal()">⬆⬇ Data</button>
   </nav>
 
   <!-- Home Page -->
@@ -1108,11 +1128,30 @@
     <div class="screenshots-content">
       <div class="screenshots-header">
         <h2>Screenshots</h2>
-        <button class="add-project-btn" onclick="document.getElementById('screenshotInput').click()">+ Add Screenshot</button>
-        <input type="file" id="screenshotInput" accept="image/*" multiple style="display:none" onchange="handleScreenshots(event)" />
+        <button class="add-project-btn" onclick="openScreenshotModal()">+ Add Screenshot</button>
       </div>
       <div class="screenshots-grid" id="screenshotsGrid"></div>
-      <div class="screenshot-empty" id="screenshotsEmpty">No screenshots yet. Hit "Add Screenshot" to upload.</div>
+      <div class="screenshot-empty" id="screenshotsEmpty">No screenshots yet. Drop files in <code>screenshots/</code> folder then add them here.</div>
+    </div>
+  </div>
+
+  <!-- Screenshot Modal -->
+  <div class="modal" id="screenshotModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <h3>Add Screenshot</h3>
+      <p style="color:#555; font-size:0.9rem; margin-bottom:20px;">Place image files in <code>c:\website\screenshots\</code> then enter the filename below.</p>
+      <div class="modal-field">
+        <label>Filename (e.g. screenshot.png)</label>
+        <input type="text" id="screenshotFilename" placeholder="screenshot.png" />
+      </div>
+      <div class="modal-field">
+        <label>Label (optional)</label>
+        <input type="text" id="screenshotLabel" placeholder="Short description..." />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeScreenshotModal()">Cancel</button>
+        <button class="btn-primary" onclick="addScreenshot()">Add</button>
+      </div>
     </div>
   </div>
 
@@ -1150,6 +1189,30 @@
       <div class="modal-buttons">
         <button class="btn-secondary" onclick="closeClipModal()">Cancel</button>
         <button class="btn-primary" onclick="addClip()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Export/Import Modal -->
+  <div class="modal" id="dataModal">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3>Export / Import Data</h3>
+      <p style="color:#555; font-size:0.9rem; margin-bottom:20px;">Export saves all your tasks, projects, screenshots, and clip entries to a JSON file. Import loads them back. Note: actual image/video files are not included — only their filenames and labels.</p>
+
+      <div class="modal-field">
+        <label>Export</label>
+        <button class="convert-btn" onclick="exportData()" style="width:100%;">Download backup.json</button>
+      </div>
+
+      <div class="modal-field" style="margin-top:16px;">
+        <label>Import</label>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+        <button class="convert-btn" onclick="document.getElementById('importFile').click()" style="width:100%; background:#6366f1;">Choose backup.json</button>
+        <small style="color:#ef4444; margin-top:8px; display:block;">Warning: import overwrites all current data.</small>
+      </div>
+
+      <div class="modal-buttons" style="margin-top:8px;">
+        <button class="btn-secondary" onclick="closeDataModal()">Close</button>
       </div>
     </div>
   </div>
@@ -1580,22 +1643,48 @@
       localStorage.setItem('screenshots', JSON.stringify(screenshots));
     }
 
-    function handleScreenshots(e) {
-      const files = Array.from(e.target.files);
-      let loaded = 0;
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          screenshots.push({ id: Date.now() + loaded, src: event.target.result, name: file.name });
-          loaded++;
-          if (loaded === files.length) {
-            saveScreenshots();
-            renderScreenshots();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-      e.target.value = '';
+    let editingScreenshotId = null;
+
+    function openScreenshotModal() {
+      editingScreenshotId = null;
+      document.querySelector('#screenshotModal h3').textContent = 'Add Screenshot';
+      document.querySelector('#screenshotModal .btn-primary').textContent = 'Add';
+      document.getElementById('screenshotModal').classList.add('active');
+    }
+
+    function editScreenshot(id) {
+      const s = screenshots.find(s => s.id === id);
+      if (!s) return;
+      editingScreenshotId = id;
+      document.getElementById('screenshotFilename').value = s.src.replace('screenshots/', '');
+      document.getElementById('screenshotLabel').value = s.name;
+      document.querySelector('#screenshotModal h3').textContent = 'Edit Screenshot';
+      document.querySelector('#screenshotModal .btn-primary').textContent = 'Save Changes';
+      document.getElementById('screenshotModal').classList.add('active');
+    }
+
+    function closeScreenshotModal() {
+      document.getElementById('screenshotModal').classList.remove('active');
+      document.getElementById('screenshotFilename').value = '';
+      document.getElementById('screenshotLabel').value = '';
+      editingScreenshotId = null;
+    }
+
+    function addScreenshot() {
+      const filename = document.getElementById('screenshotFilename').value.trim();
+      if (!filename) return;
+      const label = document.getElementById('screenshotLabel').value.trim() || filename;
+
+      if (editingScreenshotId !== null) {
+        const s = screenshots.find(s => s.id === editingScreenshotId);
+        if (s) { s.src = 'screenshots/' + filename; s.name = label; }
+      } else {
+        screenshots.push({ id: Date.now(), src: 'screenshots/' + filename, name: label });
+      }
+
+      saveScreenshots();
+      renderScreenshots();
+      closeScreenshotModal();
     }
 
     function deleteScreenshot(id) {
@@ -1623,10 +1712,13 @@
         const card = document.createElement('div');
         card.className = 'screenshot-card';
         card.innerHTML = `
-          <img src="${s.src}" alt="${escapeHtml(s.name)}" onclick="openLightbox('${s.src}')" />
+          <img src="${escapeHtml(s.src)}" alt="${escapeHtml(s.name)}" onclick="openLightbox('${escapeHtml(s.src)}')" />
           <div class="caption">
             <span title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
-            <button onclick="deleteScreenshot(${s.id})" style="background:none;border:none;cursor:pointer;padding:0;width:18px;height:18px;flex-shrink:0;"><img src="images/trash_icon.png" alt="delete" style="width:100%;height:100%;"></button>
+            <div style="display:flex;gap:8px;">
+              <button onclick="editScreenshot(${s.id})" style="background:none;border:none;cursor:pointer;padding:0;width:18px;height:18px;flex-shrink:0;"><img src="images/edit_icon.png" alt="edit" style="width:100%;height:100%;"></button>
+              <button onclick="deleteScreenshot(${s.id})" style="background:none;border:none;cursor:pointer;padding:0;width:18px;height:18px;flex-shrink:0;"><img src="images/trash_icon.png" alt="delete" style="width:100%;height:100%;"></button>
+            </div>
           </div>
         `;
         grid.appendChild(card);
@@ -1636,6 +1728,12 @@
     document.getElementById('lightbox').addEventListener('click', (e) => {
       if (e.target.id === 'lightbox') closeLightbox();
     });
+
+    document.getElementById('screenshotModal').addEventListener('click', (e) => {
+      if (e.target.id === 'screenshotModal') closeScreenshotModal();
+    });
+
+    document.getElementById('screenshotFilename').addEventListener('keydown', e => { if (e.key === 'Enter') addScreenshot(); });
 
     // ── Clips ──
     let clips = JSON.parse(localStorage.getItem('clips') || '[]');
@@ -1726,6 +1824,60 @@
     });
 
     document.getElementById('clipFilename').addEventListener('keydown', e => { if (e.key === 'Enter') addClip(); });
+
+    // ── Export / Import ──
+    function openDataModal() {
+      document.getElementById('dataModal').classList.add('active');
+    }
+
+    function closeDataModal() {
+      document.getElementById('dataModal').classList.remove('active');
+    }
+
+    function exportData() {
+      const data = {
+        tasks: JSON.parse(localStorage.getItem('tasks') || '[]'),
+        projects: JSON.parse(localStorage.getItem('projects') || '[]'),
+        screenshots: JSON.parse(localStorage.getItem('screenshots') || '[]'),
+        clips: JSON.parse(localStorage.getItem('clips') || '[]'),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'backup.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.tasks) { localStorage.setItem('tasks', JSON.stringify(data.tasks)); tasks = data.tasks; }
+          if (data.projects) { localStorage.setItem('projects', JSON.stringify(data.projects)); projects = data.projects; }
+          if (data.screenshots) { localStorage.setItem('screenshots', JSON.stringify(data.screenshots)); screenshots = data.screenshots; }
+          if (data.clips) { localStorage.setItem('clips', JSON.stringify(data.clips)); clips = data.clips; }
+          render();
+          renderProjects();
+          renderScreenshots();
+          renderClips();
+          closeDataModal();
+          alert('Import successful!');
+        } catch {
+          alert('Invalid backup file.');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    document.getElementById('dataModal').addEventListener('click', (e) => {
+      if (e.target.id === 'dataModal') closeDataModal();
+    });
 
     render();
     renderProjects();
