@@ -2666,9 +2666,10 @@
         const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
         const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
 
-        const [teamData, sbData] = await Promise.all([
+        const [teamData, sbData, todaySbData] = await Promise.all([
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${YANKEES_ID}?enable=schedule`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard`).then(r => r.json()),
         ]);
 
         const team = teamData.team;
@@ -2681,22 +2682,46 @@
         logoEl.style.display = 'block';
         document.getElementById('yankeesStanding').textContent = team.standingSummary || '';
 
-        // Filter to Yankees games
-        const allYankeeGames = (sbData.events || []).filter(ev =>
+        // Check today's scoreboard for a live or today Yankees game
+        const todayYankeeGame = (todaySbData.events || []).find(ev =>
           ev.competitions?.[0]?.competitors?.some(c => c.id === YANKEES_ID)
+        );
+
+        // Filter past Yankees games from date-range scoreboard (exclude today's game)
+        const allYankeeGames = (sbData.events || []).filter(ev =>
+          ev.competitions?.[0]?.competitors?.some(c => c.id === YANKEES_ID) &&
+          ev.id !== todayYankeeGame?.id
         );
         const yankeeGames = allYankeeGames.slice(-5).reverse();
 
-        // Next game
-        const nextEvent = team.nextEvent?.[0];
         let html = '';
 
-        if (nextEvent) {
-          const comp = nextEvent.competitions?.[0];
+        // Today's game (live, final, or upcoming today)
+        if (todayYankeeGame) {
+          const comp = todayYankeeGame.competitions?.[0];
+          const nyy = comp?.competitors?.find(c => c.id === YANKEES_ID);
+          const opp = comp?.competitors?.find(c => c.id !== YANKEES_ID);
+          const status = comp?.status?.type;
+          const isLive = status?.state === 'in';
+          const isFinal = status?.state === 'post';
+          const isPre = status?.state === 'pre';
+          const nyyScore = parseInt(nyy?.score || 0);
+          const oppScore = parseInt(opp?.score || 0);
+          const won = isFinal && nyyScore > oppScore;
+          const homeAway = nyy?.homeAway === 'home' ? 'vs' : '@';
+          const scoreClass = isFinal ? (won ? 'win' : 'loss') : '';
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
           const away = comp?.competitors?.find(c => c.homeAway === 'away');
           const venue = comp?.venue?.fullName || '';
-          html += `<div class="sports-section-title">Next Game</div>`;
+
+          let statusHtml = '';
+          if (isLive) statusHtml = `<span class="game-status status-live">&#9679; Live — ${status.shortDetail || status.detail || ''}</span>`;
+          else if (isFinal) statusHtml = `<span class="game-status status-final">${won ? 'W' : 'L'} — Final</span>`;
+          else statusHtml = `<span class="game-status status-upcoming">Upcoming</span>`;
+
+          const sectionTitle = isLive ? "Today's Game — Live" : isFinal ? "Today's Game" : "Today's Game";
+
+          html += `<div class="sports-section-title">${sectionTitle}</div>`;
           html += `<div class="game-card next-game">
             <div class="game-teams">
               <div class="matchup">
@@ -2708,9 +2733,33 @@
               </div>
               ${venue ? `<div style="font-size:0.8rem;color:#888;margin-top:4px;">${venue}</div>` : ''}
             </div>
-            <div class="game-date">${formatGameDate(nextEvent.date)}</div>
-            <span class="game-status status-upcoming">Upcoming</span>
+            ${isLive || isFinal ? `<div class="game-score ${scoreClass}">${nyyScore} – ${oppScore}</div>` : `<div class="game-date">${formatGameDate(todayYankeeGame.date)}</div>`}
+            ${statusHtml}
           </div>`;
+        } else {
+          // No game today — show next upcoming from team data
+          const nextEvent = team.nextEvent?.[0];
+          if (nextEvent) {
+            const comp = nextEvent.competitions?.[0];
+            const home = comp?.competitors?.find(c => c.homeAway === 'home');
+            const away = comp?.competitors?.find(c => c.homeAway === 'away');
+            const venue = comp?.venue?.fullName || '';
+            html += `<div class="sports-section-title">Next Game</div>`;
+            html += `<div class="game-card next-game">
+              <div class="game-teams">
+                <div class="matchup">
+                  <img src="${teamLogo(away?.team)}" alt="${away?.team?.abbreviation || ''}">
+                  <span>${away?.team?.displayName || ''}</span>
+                  <span class="vs">@</span>
+                  <img src="${teamLogo(home?.team)}" alt="${home?.team?.abbreviation || ''}">
+                  <span>${home?.team?.displayName || ''}</span>
+                </div>
+                ${venue ? `<div style="font-size:0.8rem;color:#888;margin-top:4px;">${venue}</div>` : ''}
+              </div>
+              <div class="game-date">${formatGameDate(nextEvent.date)}</div>
+              <span class="game-status status-upcoming">Upcoming</span>
+            </div>`;
+          }
         }
 
         // Recent games
