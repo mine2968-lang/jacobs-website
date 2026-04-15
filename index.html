@@ -873,6 +873,67 @@
       margin-bottom: 32px;
     }
 
+    /* Category grid */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 28px;
+    }
+
+    .category-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .category-card:hover {
+      box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+      border-color: #6366f1;
+    }
+
+    .category-card img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      background: #e5e7eb;
+      display: block;
+    }
+
+    .category-card .cat-placeholder {
+      width: 100%;
+      height: 300px;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      color: #aaa;
+    }
+
+    .category-card .cat-footer {
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-card .cat-name {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #111;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Clips detail grid */
     .clips-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
@@ -922,6 +983,23 @@
       color: #aaa;
       font-size: 0.9rem;
       padding: 64px 0;
+    }
+
+    .clips-back-btn {
+      background: none;
+      border: 1.5px solid #6366f1;
+      color: #6366f1;
+      border-radius: 6px;
+      padding: 6px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .clips-back-btn:hover {
+      background: #6366f1;
+      color: #fff;
     }
   </style>
 </head>
@@ -1161,15 +1239,50 @@
     <img id="lightboxImg" src="" alt="" />
   </div>
 
-  <!-- Clips Page -->
+  <!-- Clips Categories Page -->
   <div class="page" id="page-clips">
     <div class="clips-content">
       <div class="clips-header">
-        <h2>Clips</h2>
+        <h2>Clip Categories</h2>
+        <button class="add-project-btn" onclick="openCategoryModal()">+ Add Category</button>
+      </div>
+      <div class="category-grid" id="categoryGrid"></div>
+      <div class="clips-empty" id="categoryEmpty">No categories yet. Add one to get started.</div>
+    </div>
+  </div>
+
+  <!-- Clips Detail Page (clips within a category) -->
+  <div class="page" id="page-clips-detail">
+    <div class="clips-content">
+      <div class="clips-header">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <button class="clips-back-btn" onclick="showClipsCategories()">&#8592; Back</button>
+          <h2 id="clipsDetailTitle">Clips</h2>
+        </div>
         <button class="add-project-btn" onclick="openClipModal()">+ Add Clip</button>
       </div>
       <div class="clips-grid" id="clipsGrid"></div>
       <div class="clips-empty" id="clipsEmpty">No clips yet. Drop files in <code>videos/</code> folder then add them here.</div>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal" id="categoryModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <h3>Add Category</h3>
+      <p style="color:#555; font-size:0.9rem; margin-bottom:20px;">Optionally place an image in <code>c:\website\images\</code> and enter the filename below.</p>
+      <div class="modal-field">
+        <label>Category Name</label>
+        <input type="text" id="categoryName" placeholder="e.g. Gaming" />
+      </div>
+      <div class="modal-field">
+        <label>Image Filename (optional, e.g. gaming.png)</label>
+        <input type="text" id="categoryImage" placeholder="gaming.png" />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeCategoryModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveCategory()">Add</button>
+      </div>
     </div>
   </div>
 
@@ -1736,18 +1849,140 @@
     document.getElementById('screenshotFilename').addEventListener('keydown', e => { if (e.key === 'Enter') addScreenshot(); });
 
     // ── Clips ──
+    let clipCategories = JSON.parse(localStorage.getItem('clipCategories') || '[]');
     let clips = JSON.parse(localStorage.getItem('clips') || '[]');
+    // migrate old clips (no categoryId) — assign to first category if exists
+    clips.forEach(c => { if (!c.categoryId && clipCategories.length) c.categoryId = clipCategories[0].id; });
+
+    let currentCategoryId = null;
+
+    function saveClipCategories() {
+      localStorage.setItem('clipCategories', JSON.stringify(clipCategories));
+    }
 
     function saveClips() {
       localStorage.setItem('clips', JSON.stringify(clips));
     }
 
+    // ── Category navigation ──
+    function showClipsCategories() {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-clips').classList.add('active');
+      document.querySelector('nav button[onclick*="clips"]').classList.add('active');
+      currentCategoryId = null;
+      renderCategories();
+    }
+
+    function openCategory(id) {
+      const cat = clipCategories.find(c => c.id === id);
+      if (!cat) return;
+      currentCategoryId = id;
+      document.getElementById('clipsDetailTitle').textContent = cat.name;
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-clips-detail').classList.add('active');
+      renderClips();
+    }
+
+    // ── Category CRUD ──
+    let editingCategoryId = null;
+
+    function openCategoryModal() {
+      editingCategoryId = null;
+      document.querySelector('#categoryModal h3').textContent = 'Add Category';
+      document.querySelector('#categoryModal .btn-primary').textContent = 'Add';
+      document.getElementById('categoryName').value = '';
+      document.getElementById('categoryImage').value = '';
+      document.getElementById('categoryModal').classList.add('active');
+    }
+
+    function editCategory(id) {
+      const cat = clipCategories.find(c => c.id === id);
+      if (!cat) return;
+      editingCategoryId = id;
+      document.getElementById('categoryName').value = cat.name;
+      document.getElementById('categoryImage').value = cat.image || '';
+      document.querySelector('#categoryModal h3').textContent = 'Edit Category';
+      document.querySelector('#categoryModal .btn-primary').textContent = 'Save Changes';
+      document.getElementById('categoryModal').classList.add('active');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.remove('active');
+      document.getElementById('categoryName').value = '';
+      document.getElementById('categoryImage').value = '';
+      editingCategoryId = null;
+    }
+
+    function saveCategory() {
+      const name = document.getElementById('categoryName').value.trim();
+      if (!name) return;
+      const image = document.getElementById('categoryImage').value.trim();
+
+      if (editingCategoryId !== null) {
+        const cat = clipCategories.find(c => c.id === editingCategoryId);
+        if (cat) { cat.name = name; cat.image = image; }
+      } else {
+        clipCategories.push({ id: Date.now(), name, image });
+      }
+      saveClipCategories();
+      renderCategories();
+      closeCategoryModal();
+    }
+
+    function deleteCategory(id) {
+      clipCategories = clipCategories.filter(c => c.id !== id);
+      clips = clips.filter(c => c.categoryId !== id);
+      saveClipCategories();
+      saveClips();
+      renderCategories();
+    }
+
+    function renderCategories() {
+      const grid = document.getElementById('categoryGrid');
+      const empty = document.getElementById('categoryEmpty');
+      grid.innerHTML = '';
+      empty.style.display = clipCategories.length === 0 ? 'block' : 'none';
+
+      clipCategories.forEach(cat => {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        const imgHtml = cat.image
+          ? `<img src="images/${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="cat-placeholder" style="display:none;">&#127916;</div>`
+          : `<div class="cat-placeholder">&#127916;</div>`;
+        card.innerHTML = `
+          <div style="padding:16px 18px;">
+            <span class="cat-name" onclick="openCategory(${cat.id})" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</span>
+          </div>
+          <div onclick="openCategory(${cat.id})" style="flex:1;display:flex;flex-direction:column;">
+            ${imgHtml}
+          </div>
+          <div class="cat-footer">
+            <span style="font-size:0.9rem;color:#888;font-weight:700;">${clips.filter(c => c.categoryId === cat.id).length} video${clips.filter(c => c.categoryId === cat.id).length !== 1 ? 's' : ''}</span>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <button onclick="editCategory(${cat.id})" style="background:none;border:none;cursor:pointer;padding:0;width:18px;height:18px;"><img src="images/edit_icon.png" alt="edit" style="width:100%;height:100%;"></button>
+              <button onclick="deleteCategory(${cat.id})" style="background:none;border:none;cursor:pointer;padding:0;width:18px;height:18px;"><img src="images/trash_icon.png" alt="delete" style="width:100%;height:100%;"></button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    document.getElementById('categoryModal').addEventListener('click', (e) => {
+      if (e.target.id === 'categoryModal') closeCategoryModal();
+    });
+    document.getElementById('categoryName').addEventListener('keydown', e => { if (e.key === 'Enter') saveCategory(); });
+
+    // ── Clip CRUD ──
     let editingClipId = null;
 
     function openClipModal() {
       editingClipId = null;
       document.querySelector('#clipModal h3').textContent = 'Add Clip';
       document.querySelector('#clipModal .btn-primary').textContent = 'Add';
+      document.getElementById('clipFilename').value = '';
+      document.getElementById('clipLabel').value = '';
       document.getElementById('clipModal').classList.add('active');
     }
 
@@ -1777,12 +2012,9 @@
 
       if (editingClipId !== null) {
         const clip = clips.find(c => c.id === editingClipId);
-        if (clip) {
-          clip.src = 'videos/' + filename;
-          clip.name = label;
-        }
+        if (clip) { clip.src = 'videos/' + filename; clip.name = label; }
       } else {
-        clips.push({ id: Date.now(), src: 'videos/' + filename, name: label });
+        clips.push({ id: Date.now(), src: 'videos/' + filename, name: label, categoryId: currentCategoryId });
       }
 
       saveClips();
@@ -1800,9 +2032,10 @@
       const grid = document.getElementById('clipsGrid');
       const empty = document.getElementById('clipsEmpty');
       grid.innerHTML = '';
-      empty.style.display = clips.length === 0 ? 'block' : 'none';
+      const catClips = clips.filter(c => c.categoryId === currentCategoryId);
+      empty.style.display = catClips.length === 0 ? 'block' : 'none';
 
-      clips.forEach(c => {
+      catClips.forEach(c => {
         const card = document.createElement('div');
         card.className = 'clip-card';
         card.innerHTML = `
@@ -1839,6 +2072,7 @@
         tasks: JSON.parse(localStorage.getItem('tasks') || '[]'),
         projects: JSON.parse(localStorage.getItem('projects') || '[]'),
         screenshots: JSON.parse(localStorage.getItem('screenshots') || '[]'),
+        clipCategories: JSON.parse(localStorage.getItem('clipCategories') || '[]'),
         clips: JSON.parse(localStorage.getItem('clips') || '[]'),
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1860,11 +2094,12 @@
           if (data.tasks) { localStorage.setItem('tasks', JSON.stringify(data.tasks)); tasks = data.tasks; }
           if (data.projects) { localStorage.setItem('projects', JSON.stringify(data.projects)); projects = data.projects; }
           if (data.screenshots) { localStorage.setItem('screenshots', JSON.stringify(data.screenshots)); screenshots = data.screenshots; }
+          if (data.clipCategories) { localStorage.setItem('clipCategories', JSON.stringify(data.clipCategories)); clipCategories = data.clipCategories; }
           if (data.clips) { localStorage.setItem('clips', JSON.stringify(data.clips)); clips = data.clips; }
           render();
           renderProjects();
           renderScreenshots();
-          renderClips();
+          renderCategories();
           closeDataModal();
           alert('Import successful!');
         } catch {
@@ -1882,7 +2117,7 @@
     render();
     renderProjects();
     renderScreenshots();
-    renderClips();
+    renderCategories();
   </script>
 </body>
 </html>
