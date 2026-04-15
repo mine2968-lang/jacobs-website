@@ -60,6 +60,64 @@
       color: #fff;
     }
 
+    /* ── Nav Dropdown ── */
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .nav-dropdown-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-dropdown-btn::after {
+      content: '▾';
+      font-size: 0.7rem;
+    }
+
+    .nav-dropdown-btn.active::after {
+      content: '▾';
+    }
+
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      padding-top: 4px;
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 160px;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown:focus-within .nav-dropdown-menu {
+      display: block;
+    }
+
+    .nav-dropdown-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border-radius: 0;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+    }
+
+    .nav-dropdown-menu button:hover {
+      background: #f0f2f5;
+    }
+
+    .nav-dropdown-menu button.active {
+      background: #6366f1;
+      color: #fff;
+    }
+
     /* ── Pages ── */
     .page {
       display: none;
@@ -1045,7 +1103,7 @@
 
     /* ── Sports ── */
     .sports-content {
-      max-width: 900px;
+      max-width: 1300px;
       width: 100%;
     }
 
@@ -1205,6 +1263,97 @@
       padding: 14px 18px;
       font-size: 0.9rem;
     }
+
+    .sports-columns {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .sports-col-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sports-col-right {
+      width: 380px;
+      flex-shrink: 0;
+    }
+
+    .stats-panel {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .stats-panel-title {
+      background: #132448;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .stats-table th {
+      background: #f9fafb;
+      color: #6b7280;
+      font-weight: 700;
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    .stats-table th:first-child {
+      text-align: left;
+    }
+
+    .stats-table td {
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+    }
+
+    .stats-table td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .stats-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .stats-table tr:hover td {
+      background: #fafaff;
+    }
+
+    .stats-sub-title {
+      padding: 8px 16px 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #6366f1;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #fff;
+    }
+
+    .stats-game-label {
+      padding: 10px 16px 6px;
+      font-size: 0.8rem;
+      color: #888;
+      background: #fff;
+    }
   </style>
 </head>
 <body>
@@ -1214,11 +1363,16 @@
     <button class="active" onclick="showPage('home', this)">Home</button>
     <button onclick="showPage('todo', this)">To Do</button>
     <button onclick="showPage('projects', this)">Projects</button>
-    <button onclick="showPage('calculator', this)">Calculator</button>
-    <button onclick="showPage('imgconvert', this)">IMG Convert</button>
     <button onclick="showPage('screenshots', this)">Screenshots</button>
     <button onclick="showPage('clips', this)">Clips</button>
     <button onclick="showPage('sports', this)">Sports</button>
+    <div class="nav-dropdown">
+      <button class="nav-dropdown-btn" id="toolsDropdownBtn">Tools</button>
+      <div class="nav-dropdown-menu">
+        <button onclick="showPage('calculator', this)">Calculator</button>
+        <button onclick="showPage('imgconvert', this)">IMG Convert</button>
+      </div>
+    </div>
     <button class="nav-data-btn" onclick="openDataModal()">⬆⬇ Data</button>
   </nav>
 
@@ -1526,7 +1680,7 @@
   <div class="page" id="page-sports">
     <div class="sports-content">
       <div class="sports-header" id="sportsHeader">
-        <img src="https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png" alt="Yankees" onerror="this.style.display='none'">
+        <img id="yankeesLogo" src="" alt="Yankees" style="display:none;" onerror="this.style.display='none'">
         <div class="team-info">
           <h2>New York Yankees</h2>
           <div class="team-record" id="yankeesRecord">Loading...</div>
@@ -1538,8 +1692,13 @@
         </div>
       </div>
 
-      <div id="sportsBody">
-        <div class="sports-loading">Loading Yankees data...</div>
+      <div class="sports-columns">
+        <div class="sports-col-left" id="sportsBody">
+          <div class="sports-loading">Loading Yankees data...</div>
+        </div>
+        <div class="sports-col-right" id="sportsStats">
+          <div class="sports-loading">Loading stats...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1599,11 +1758,16 @@
 
   <script>
     // ── Tab routing ──
+    const TOOLS_PAGES = ['calculator', 'imgconvert'];
+
     function showPage(id, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       document.getElementById('page-' + id).classList.add('active');
       btn.classList.add('active');
+      // highlight the Tools dropdown button when a tools page is active
+      const toolsBtn = document.getElementById('toolsDropdownBtn');
+      if (toolsBtn) toolsBtn.classList.toggle('active', TOOLS_PAGES.includes(id));
     }
 
     // ── To Do ──
@@ -2479,7 +2643,9 @@
     let sportsRefreshTimer = null;
 
     function teamLogo(team) {
-      // scoreboard uses team.logo (string), nextEvent uses team.logos[0].href
+      // Use local file by abbreviation — avoids file:// external image blocking
+      const abbr = team?.abbreviation?.toLowerCase();
+      if (abbr) return `images/mlb_${abbr}.png`;
       return team?.logo || team?.logos?.[0]?.href || '';
     }
 
@@ -2491,39 +2657,40 @@
 
     async function loadYankees() {
       const body = document.getElementById('sportsBody');
+      const statsPanel = document.getElementById('sportsStats');
       document.getElementById('sportsLastUpdated').textContent = '';
 
       try {
-        // Team info (record, standing, next game)
-        const teamRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${YANKEES_ID}?enable=schedule`);
-        const teamData = await teamRes.json();
-        const team = teamData.team;
-
-        // Record
-        const overallRecord = team.record?.items?.find(r => r.type === 'total');
-        document.getElementById('yankeesRecord').textContent = overallRecord ? overallRecord.summary : '';
-
-        // Standing
-        document.getElementById('yankeesStanding').textContent = team.standingSummary || '';
-
-        // Scoreboard — last 7 days + today for recent games
+        // Team info + scoreboard in parallel
         const today = new Date();
         const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
         const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
-        const sbRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`);
-        const sbData = await sbRes.json();
+
+        const [teamData, sbData] = await Promise.all([
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${YANKEES_ID}?enable=schedule`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
+        ]);
+
+        const team = teamData.team;
+
+        // Record + logo + standing
+        const overallRecord = team.record?.items?.find(r => r.type === 'total');
+        document.getElementById('yankeesRecord').textContent = overallRecord ? overallRecord.summary : '';
+        const logoEl = document.getElementById('yankeesLogo');
+        logoEl.src = 'images/nyy.png';
+        logoEl.style.display = 'block';
+        document.getElementById('yankeesStanding').textContent = team.standingSummary || '';
 
         // Filter to Yankees games
-        const yankeeGames = (sbData.events || []).filter(ev =>
+        const allYankeeGames = (sbData.events || []).filter(ev =>
           ev.competitions?.[0]?.competitors?.some(c => c.id === YANKEES_ID)
-        ).slice(-5).reverse(); // most recent first
-
-        // Next game from team data
-        const nextEvent = team.nextEvent?.[0];
-
-        let html = '';
+        );
+        const yankeeGames = allYankeeGames.slice(-5).reverse();
 
         // Next game
+        const nextEvent = team.nextEvent?.[0];
+        let html = '';
+
         if (nextEvent) {
           const comp = nextEvent.competitions?.[0];
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
@@ -2559,12 +2726,8 @@
             const nyyScore = parseInt(nyy?.score || 0);
             const oppScore = parseInt(opp?.score || 0);
             const won = isFinal && nyyScore > oppScore;
-            const lost = isFinal && nyyScore < oppScore;
             const homeAway = nyy?.homeAway === 'home' ? 'vs' : '@';
-
-            let scoreClass = '';
-            if (isFinal) scoreClass = won ? 'win' : 'loss';
-
+            const scoreClass = isFinal ? (won ? 'win' : 'loss') : '';
             let statusHtml = '';
             if (isLive) statusHtml = `<span class="game-status status-live">&#9679; Live — ${status.detail || ''}</span>`;
             else if (isFinal) statusHtml = `<span class="game-status status-final">${won ? 'W' : 'L'} — Final</span>`;
@@ -2591,8 +2754,125 @@
         body.innerHTML = html;
         document.getElementById('sportsLastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
+        // ── Player stats: find most recent completed Yankees game ──
+        const lastGame = allYankeeGames.filter(ev =>
+          ev.competitions?.[0]?.status?.type?.state === 'post'
+        ).slice(-1)[0];
+
+        // Fetch box score + standings in parallel
+        const [summaryData, standingsData] = await Promise.all([
+          lastGame
+            ? fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${lastGame.id}`).then(r => r.json())
+            : Promise.resolve(null),
+          fetch('https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?level=3').then(r => r.json()),
+        ]);
+
+        let statsHtml = '';
+
+        // ── Standings ──
+        // Find the division containing NYY
+        let nyyDivision = null;
+        for (const league of standingsData.children || []) {
+          for (const div of league.children || []) {
+            const entries = div.standings?.entries || [];
+            if (entries.some(e => e.team?.abbreviation === 'NYY')) {
+              nyyDivision = { name: div.name, entries };
+              break;
+            }
+          }
+          if (nyyDivision) break;
+        }
+
+        if (nyyDivision) {
+          statsHtml += `<div class="stats-panel" style="margin-bottom:16px;">
+            <div class="stats-panel-title">${nyyDivision.name} Standings</div>
+            <table class="stats-table"><thead><tr>
+              <th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>Strk</th><th>L10</th>
+            </tr></thead><tbody>`;
+
+          nyyDivision.entries.forEach(e => {
+            const abbr = e.team?.abbreviation || '';
+            const stats = Object.fromEntries((e.stats || []).map(s => [s.name, s.displayValue]));
+            const isNYY = abbr === 'NYY';
+            statsHtml += `<tr ${isNYY ? 'style="background:#ede9fe;font-weight:700;"' : ''}>
+              <td>${abbr}</td>
+              <td>${stats.wins ?? '—'}</td>
+              <td>${stats.losses ?? '—'}</td>
+              <td>${stats.winPercent ?? '—'}</td>
+              <td>${stats.gamesBehind ?? '—'}</td>
+              <td>${stats.streak ?? '—'}</td>
+              <td>${stats['Last Ten Games'] ?? '—'}</td>
+            </tr>`;
+          });
+
+          statsHtml += `</tbody></table></div>`;
+        }
+
+        // ── Box Score ──
+        if (summaryData && lastGame) {
+          const bsPlayers = summaryData.boxscore?.players || [];
+          const nyyBox = bsPlayers.find(t => t.team?.abbreviation === 'NYY');
+
+          if (nyyBox) {
+            const comp = lastGame.competitions?.[0];
+            const nyy = comp?.competitors?.find(c => c.id === YANKEES_ID);
+            const opp = comp?.competitors?.find(c => c.id !== YANKEES_ID);
+            const nyyScore = nyy?.score || '0';
+            const oppScore = opp?.score || '0';
+            const oppAbbr = opp?.team?.abbreviation || '';
+            const gameLabel = `${new Date(lastGame.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})} — NYY ${nyyScore}, ${oppAbbr} ${oppScore}`;
+
+            statsHtml += `<div class="stats-panel">
+              <div class="stats-panel-title">Last Game Box Score</div>
+              <div class="stats-game-label">${gameLabel}</div>`;
+
+            nyyBox.statistics.forEach(sg => {
+              const isBatting = sg.type === 'batting';
+              const isPitching = sg.type === 'pitching';
+              if (!isBatting && !isPitching) return;
+
+              const showCols = isBatting
+                ? ['AB','R','H','RBI','HR','BB','K','AVG']
+                : ['IP','H','R','ER','BB','K','ERA'];
+
+              const allLabels = sg.labels || [];
+              const colIdxs = showCols.map(c => allLabels.indexOf(c)).filter(i => i !== -1);
+              const colNames = colIdxs.map(i => allLabels[i]);
+
+              statsHtml += `<div class="stats-sub-title">${isBatting ? 'Batting' : 'Pitching'}</div>`;
+              statsHtml += `<table class="stats-table"><thead><tr>
+                <th>Player</th>
+                ${colNames.map(c => `<th>${c}</th>`).join('')}
+              </tr></thead><tbody>`;
+
+              sg.athletes.forEach(a => {
+                const name = a.athlete?.shortName || '';
+                const pos = a.position?.abbreviation || '';
+                statsHtml += `<tr>
+                  <td>${name} <span style="color:#aaa;font-weight:400;">${pos}</span></td>
+                  ${colIdxs.map(i => `<td>${a.stats[i] ?? '—'}</td>`).join('')}
+                </tr>`;
+              });
+
+              if (sg.totals?.length) {
+                statsHtml += `<tr style="font-weight:700;background:#f9fafb;">
+                  <td>Totals</td>
+                  ${colIdxs.map(i => `<td>${sg.totals[i] ?? ''}</td>`).join('')}
+                </tr>`;
+              }
+
+              statsHtml += `</tbody></table>`;
+            });
+
+            statsHtml += `</div>`;
+          }
+        }
+
+        statsPanel.innerHTML = statsHtml || `<div class="sports-loading">No data available.</div>`;
+
       } catch(err) {
         body.innerHTML = `<div class="sports-error">Failed to load data. Check your connection and try refreshing.<br><small>${err.message}</small></div>`;
+        statsPanel.innerHTML = '';
       }
 
       // auto-refresh every 60s
