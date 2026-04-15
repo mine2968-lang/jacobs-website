@@ -2704,18 +2704,29 @@
           const status = comp?.status?.type;
           const isLive = status?.state === 'in';
           const isFinal = status?.state === 'post';
-          const isPre = status?.state === 'pre';
           const nyyScore = parseInt(nyy?.score || 0);
           const oppScore = parseInt(opp?.score || 0);
           const won = isFinal && nyyScore > oppScore;
-          const homeAway = nyy?.homeAway === 'home' ? 'vs' : '@';
           const scoreClass = isFinal ? (won ? 'win' : 'loss') : '';
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
           const away = comp?.competitors?.find(c => c.homeAway === 'away');
           const venue = comp?.venue?.fullName || '';
 
+          // Fetch outs from summary if live
+          let outsHtml = '';
+          if (isLive) {
+            try {
+              const liveSummary = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${todayYankeeGame.id}`).then(r => r.json());
+              const outs = liveSummary.situation?.outs;
+              if (outs !== undefined) {
+                const dots = '⬤'.repeat(outs) + '⭘'.repeat(3 - outs);
+                outsHtml = `<div style="font-size:0.75rem;color:#16a34a;font-weight:700;margin-top:3px;">${dots} ${outs} out${outs !== 1 ? 's' : ''}</div>`;
+              }
+            } catch(e) {}
+          }
+
           let statusHtml = '';
-          if (isLive) statusHtml = `<span class="game-status status-live">&#9679; Live — ${status.shortDetail || status.detail || ''}</span>`;
+          if (isLive) statusHtml = `<div><span class="game-status status-live">&#9679; Live — ${status.shortDetail || status.detail || ''}</span>${outsHtml}</div>`;
           else if (isFinal) statusHtml = `<span class="game-status status-final">${won ? 'W' : 'L'} — Final</span>`;
           else statusHtml = `<span class="game-status status-upcoming">Upcoming</span>`;
 
@@ -2925,8 +2936,10 @@
       }
 
       // auto-refresh every 60s
+      // Refresh every 20s during a live game, 60s otherwise
+      const isCurrentlyLive = !!todayYankeeGame && todayYankeeGame.competitions?.[0]?.status?.type?.state === 'in';
       clearTimeout(sportsRefreshTimer);
-      sportsRefreshTimer = setTimeout(loadYankees, 60000);
+      sportsRefreshTimer = setTimeout(loadYankees, isCurrentlyLive ? 20000 : 60000);
     }
 
     // load when tab is clicked
