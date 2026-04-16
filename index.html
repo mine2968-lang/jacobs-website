@@ -1264,6 +1264,78 @@
       font-size: 0.9rem;
     }
 
+    .live-details {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      padding: 14px 20px;
+      margin-top: -2px;
+      margin-bottom: 10px;
+    }
+
+    .live-details-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #16a34a;
+      margin-bottom: 10px;
+    }
+
+    .live-player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .live-player-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #111;
+    }
+
+    .live-player-pos {
+      font-size: 0.75rem;
+      color: #888;
+      margin-left: 4px;
+    }
+
+    .live-stat-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .live-stat-chip {
+      background: #fff;
+      border: 1px solid #d1fae5;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .live-stat-chip strong {
+      color: #111;
+    }
+
+    .live-count {
+      font-size: 0.8rem;
+      color: #16a34a;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .live-bvp {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
     .sports-columns {
       display: flex;
       gap: 24px;
@@ -2695,6 +2767,7 @@
         const yankeeGames = allYankeeGames.slice(-5).reverse();
 
         let html = '';
+        let liveSitData = null;
 
         // Today's game (live, final, or upcoming today)
         if (todayYankeeGame) {
@@ -2712,16 +2785,122 @@
           const away = comp?.competitors?.find(c => c.homeAway === 'away');
           const venue = comp?.venue?.fullName || '';
 
-          // Fetch outs from summary if live
+          // Fetch live summary for outs, batter, pitcher
           let outsHtml = '';
+          let liveDetailsHtml = '';
           if (isLive) {
             try {
               const liveSummary = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${todayYankeeGame.id}`).then(r => r.json());
-              const outs = liveSummary.situation?.outs;
-              if (outs !== undefined) {
-                const dots = '⬤'.repeat(outs) + '⭘'.repeat(3 - outs);
-                outsHtml = `<div style="font-size:0.75rem;color:#16a34a;font-weight:700;margin-top:3px;">${dots} ${outs} out${outs !== 1 ? 's' : ''}</div>`;
+              const sit = liveSummary.situation || {};
+              const outs = sit.outs ?? 0;
+              const balls = sit.balls ?? 0;
+              const strikes = sit.strikes ?? 0;
+              const dots = '⬤'.repeat(outs) + '⭘'.repeat(3 - outs);
+              outsHtml = `<div style="font-size:0.75rem;color:#16a34a;font-weight:700;margin-top:3px;">${dots} ${outs} out${outs !== 1 ? 's' : ''}</div>`;
+
+              // Build player lookup from boxscore
+              const bsPlayers = liveSummary.boxscore?.players || [];
+              const playerMap = {}; // id -> { name, pos, stats, labels, type, teamAbbr }
+              bsPlayers.forEach(teamEntry => {
+                const teamAbbr = teamEntry.team?.abbreviation;
+                teamEntry.statistics?.forEach(sg => {
+                  sg.athletes?.forEach(a => {
+                    playerMap[String(a.athlete?.id)] = {
+                      name: a.athlete?.shortName || a.athlete?.displayName || '',
+                      pos: a.position?.abbreviation || '',
+                      stats: a.stats || [],
+                      labels: sg.labels || [],
+                      type: sg.type,
+                      teamAbbr,
+                    };
+                  });
+                });
+              });
+
+              // Determine who is batting (Top = away batting, Bottom = home batting)
+              const periodPrefix = liveSummary.header?.competitions?.[0]?.status?.periodPrefix || '';
+              const detailWord = (status.detail || '').split(' ')[0]; // Top/Middle/Bottom/End
+              const halfWord = periodPrefix || detailWord;
+              const nyyIsHome = nyy?.homeAway === 'home';
+              const nyyIsBatting = (halfWord === 'Bottom' && nyyIsHome) || (halfWord === 'Top' && !nyyIsHome);
+              const isBetweenInnings = ['Mid','Middle','End'].includes(halfWord) || (!sit.batter && !sit.pitcher);
+
+              const batterId = String(sit.batter?.playerId || '');
+              const pitcherId = String(sit.pitcher?.playerId || '');
+
+              // Store for reuse in right-panel card
+              liveSitData = { sit, playerMap, nyyIsBatting, isBetweenInnings, batterId, pitcherId, balls, strikes, outs, bsPlayers };
+              const bvp = sit.situationNotes?.find(n => n.type === 'BVP_STATS')?.text || '';
+
+              liveDetailsHtml += `<div class="live-details">`;
+
+              if (isBetweenInnings && sit.dueUp?.length) {
+                // Between innings — show due up batters for whichever team bats next
+                const nextHalfIsNYY = halfWord === 'Mid' ? nyyIsHome : !nyyIsHome;
+                const dueUpNames = sit.dueUp.map(d => {
+                  const p = playerMap[String(d.playerId)];
+                  return p ? `<span style="font-weight:600;">${p.name}</span> <span style="color:#888;font-size:0.75rem;">${p.pos}</span>` : '';
+                }).filter(Boolean).join(' &nbsp;·&nbsp; ');
+                liveDetailsHtml += `
+                  <div class="live-details-title">Due Up — ${nextHalfIsNYY ? 'NYY' : 'Opponent'}</div>
+                  <div style="font-size:0.85rem;color:#374151;">${dueUpNames}</div>`;
+
+              } else if (nyyIsBatting && batterId && playerMap[batterId]) {
+                // Yankees batting — show batter's game stats
+                const p = playerMap[batterId];
+                const statPairs = ['H-AB','HR','RBI','BB','K'];
+                const chips = statPairs.map(lbl => {
+                  const idx = p.labels.indexOf(lbl);
+                  const val = idx !== -1 ? p.stats[idx] : null;
+                  return val !== null ? `<div class="live-stat-chip"><strong>${val}</strong> ${lbl}</div>` : '';
+                }).join('');
+                liveDetailsHtml += `
+                  <div class="live-details-title">At Bat</div>
+                  <div class="live-player-row">
+                    <div><span class="live-player-name">${p.name}</span><span class="live-player-pos">${p.pos}</span></div>
+                    <div class="live-stat-chips">${chips}</div>
+                  </div>
+                  <div class="live-count">Count: ${balls}-${strikes}</div>
+                  ${bvp ? `<div class="live-bvp">${bvp}</div>` : ''}`;
+
+              } else if (!nyyIsBatting && pitcherId && playerMap[pitcherId]) {
+                // Yankees pitching — show pitcher's game line
+                const p = playerMap[pitcherId];
+                const statPairs = ['IP','H','R','ER','BB','K','PC'];
+                const chips = statPairs.map(lbl => {
+                  const idx = p.labels.indexOf(lbl);
+                  const val = idx !== -1 ? p.stats[idx] : null;
+                  return val !== null ? `<div class="live-stat-chip"><strong>${val}</strong> ${lbl}</div>` : '';
+                }).join('');
+                liveDetailsHtml += `
+                  <div class="live-details-title">Pitching</div>
+                  <div class="live-player-row">
+                    <div><span class="live-player-name">${p.name}</span><span class="live-player-pos">${p.pos}</span></div>
+                    <div class="live-stat-chips">${chips}</div>
+                  </div>
+                  <div class="live-count">Count: ${balls}-${strikes}</div>
+                  ${bvp ? `<div class="live-bvp">${bvp}</div>` : ''}`;
+
+              } else if (batterId && playerMap[batterId]) {
+                // Fallback — show whoever is at bat
+                const p = playerMap[batterId];
+                const chips = ['H-AB','HR','RBI'].map(lbl => {
+                  const idx = p.labels.indexOf(lbl);
+                  const val = idx !== -1 ? p.stats[idx] : null;
+                  return val !== null ? `<div class="live-stat-chip"><strong>${val}</strong> ${lbl}</div>` : '';
+                }).join('');
+                liveDetailsHtml += `
+                  <div class="live-details-title">At Bat</div>
+                  <div class="live-player-row">
+                    <div><span class="live-player-name">${p.name}</span><span class="live-player-pos">${p.pos}</span></div>
+                    <div class="live-stat-chips">${chips}</div>
+                  </div>
+                  <div class="live-count">Count: ${balls}-${strikes}</div>`;
+              } else {
+                liveDetailsHtml += `<div style="color:#888;font-size:0.85rem;">Waiting for play data...</div>`;
               }
+
+              liveDetailsHtml += `</div>`;
             } catch(e) {}
           }
 
@@ -2733,7 +2912,7 @@
           const sectionTitle = isLive ? "Today's Game — Live" : isFinal ? "Today's Game" : "Today's Game";
 
           html += `<div class="sports-section-title">${sectionTitle}</div>`;
-          html += `<div class="game-card next-game">
+          html += `<div class="game-card next-game" style="${isLive ? 'border-radius:10px 10px 0 0;border-bottom:none;' : ''}">
             <div class="game-teams">
               <div class="matchup">
                 <img src="${teamLogo(away?.team)}" alt="${away?.team?.abbreviation || ''}">
@@ -2746,7 +2925,7 @@
             </div>
             ${isLive || isFinal ? `<div class="game-score ${scoreClass}">${nyyScore} – ${oppScore}</div>` : `<div class="game-date">${formatGameDate(todayYankeeGame.date)}</div>`}
             ${statusHtml}
-          </div>`;
+          </div>${liveDetailsHtml}`;
         } else {
           // No game today — show next upcoming from team data
           const nextEvent = team.nextEvent?.[0];
@@ -2828,6 +3007,61 @@
         ]);
 
         let statsHtml = '';
+
+        // ── Live roster stats card in right panel ──
+        if (liveSitData) {
+          const { sit, playerMap } = liveSitData;
+          const liveComp = todayYankeeGame.competitions?.[0];
+          const liveNyy = liveComp?.competitors?.find(c => c.id === YANKEES_ID);
+          const liveOpp = liveComp?.competitors?.find(c => c.id !== YANKEES_ID);
+          const liveDetail = liveComp?.status?.type?.shortDetail || '';
+
+          // Pull NYY batting + pitching from boxscore
+          const nyyBoxEntry = (liveSitData.bsPlayers || []).find(t => t.team?.abbreviation === 'NYY');
+
+          if (nyyBoxEntry) {
+            statsHtml += `<div class="stats-panel" style="margin-bottom:16px;border-color:#bbf7d0;">
+              <div class="stats-panel-title" style="background:#16a34a;">&#9679; Live Box Score — ${liveDetail}</div>`;
+
+            nyyBoxEntry.statistics.forEach(sg => {
+              const isBatting = sg.type === 'batting';
+              const isPitching = sg.type === 'pitching';
+              if (!isBatting && !isPitching) return;
+
+              const showCols = isBatting
+                ? ['AB','R','H','RBI','HR','BB','K','AVG']
+                : ['IP','H','R','ER','BB','K','ERA'];
+              const allLabels = sg.labels || [];
+              const colIdxs = showCols.map(c => allLabels.indexOf(c)).filter(i => i !== -1);
+              const colNames = colIdxs.map(i => allLabels[i]);
+
+              statsHtml += `<div class="stats-sub-title">${isBatting ? 'Batting' : 'Pitching'}</div>`;
+              statsHtml += `<table class="stats-table"><thead><tr>
+                <th>Player</th>${colNames.map(c => `<th>${c}</th>`).join('')}
+              </tr></thead><tbody>`;
+
+              sg.athletes.forEach(a => {
+                const name = a.athlete?.shortName || '';
+                const pos = a.position?.abbreviation || '';
+                statsHtml += `<tr>
+                  <td>${name} <span style="color:#aaa;font-weight:400;">${pos}</span></td>
+                  ${colIdxs.map(i => `<td>${a.stats[i] ?? '—'}</td>`).join('')}
+                </tr>`;
+              });
+
+              if (sg.totals?.length) {
+                statsHtml += `<tr style="font-weight:700;background:#f9fafb;">
+                  <td>Totals</td>
+                  ${colIdxs.map(i => `<td>${sg.totals[i] ?? ''}</td>`).join('')}
+                </tr>`;
+              }
+
+              statsHtml += `</tbody></table>`;
+            });
+
+            statsHtml += `</div>`;
+          }
+        }
 
         // ── Standings ──
         // Find the division containing NYY
@@ -2936,10 +3170,10 @@
       }
 
       // auto-refresh every 60s
-      // Refresh every 20s during a live game, 60s otherwise
+      // Refresh every 10s during a live game, 60s otherwise
       const isCurrentlyLive = !!todayYankeeGame && todayYankeeGame.competitions?.[0]?.status?.type?.state === 'in';
       clearTimeout(sportsRefreshTimer);
-      sportsRefreshTimer = setTimeout(loadYankees, isCurrentlyLive ? 20000 : 60000);
+      sportsRefreshTimer = setTimeout(loadYankees, isCurrentlyLive ? 10000 : 60000);
     }
 
     // load when tab is clicked
