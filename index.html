@@ -1101,6 +1101,131 @@
       color: #fff;
     }
 
+    /* ── Sports Roster ── */
+    .sports-roster {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .sports-roster-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .sports-roster-header h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .followed-teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .followed-team-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      position: relative;
+    }
+
+    .followed-team-card:hover {
+      box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+      border-color: #6366f1;
+    }
+
+    .followed-team-card img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+    }
+
+    .followed-team-card .team-card-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .followed-team-card .team-card-sport {
+      font-size: 0.78rem;
+      color: #6366f1;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .followed-team-card .team-card-remove {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px;
+    }
+
+    .followed-team-card .team-card-remove:hover { color: #ef4444; }
+
+    .sports-roster-empty {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.95rem;
+      padding: 80px 0;
+      grid-column: 1 / -1;
+    }
+
+    /* Team search modal */
+    .team-search-results {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .team-search-result {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .team-search-result:hover { background: #f0f2f5; }
+
+    .team-search-result img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .team-search-result .tsr-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1a1a1a;
+    }
+
+    .team-search-result .tsr-sport {
+      font-size: 0.78rem;
+      color: #888;
+    }
+
     /* ── Sports ── */
     .sports-content {
       max-width: 1300px;
@@ -1426,6 +1551,126 @@
       color: #888;
       background: #fff;
     }
+
+    /* ── Cards ── */
+    .cards-content {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .cards-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .cards-header h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .tcard {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tcard:hover {
+      box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+      border-color: #6366f1;
+    }
+
+    .tcard-img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      background: #f8f9ff;
+      display: block;
+      padding: 8px;
+    }
+
+    .tcard-img-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      color: #ccc;
+    }
+
+    .tcard-body {
+      padding: 14px 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tcard-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .tcard-set {
+      font-size: 0.82rem;
+      color: #6366f1;
+      font-weight: 600;
+    }
+
+    .tcard-meta {
+      font-size: 0.82rem;
+      color: #777;
+    }
+
+    .tcard-footer {
+      padding: 10px 16px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tcard-condition {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    .cond-mint     { background: #dcfce7; color: #166534; }
+    .cond-near-mint{ background: #dbeafe; color: #1e40af; }
+    .cond-excellent{ background: #fef3c7; color: #92400e; }
+    .cond-good     { background: #ffe4e6; color: #9f1239; }
+    .cond-poor     { background: #f3f4f6; color: #555; }
+
+    .tcard-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .cards-empty {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.9rem;
+      padding: 80px 0;
+      grid-column: 1 / -1;
+    }
   </style>
 </head>
 <body>
@@ -1438,6 +1683,7 @@
     <button onclick="showPage('screenshots', this)">Screenshots</button>
     <button onclick="showPage('clips', this)">Clips</button>
     <button onclick="showPage('sports', this)">Sports</button>
+    <button onclick="showPage('cards', this)">Cards</button>
     <div class="nav-dropdown">
       <button class="nav-dropdown-btn" id="toolsDropdownBtn">Tools</button>
       <div class="nav-dropdown-menu">
@@ -1750,27 +1996,116 @@
 
   <!-- Sports Page -->
   <div class="page" id="page-sports">
-    <div class="sports-content">
+    <!-- Roster view -->
+    <div class="sports-roster" id="sportsRoster">
+      <div class="sports-roster-header">
+        <h2>My Teams</h2>
+        <button class="add-project-btn" onclick="openAddTeamModal()">+ Follow Team</button>
+      </div>
+      <div class="followed-teams-grid" id="followedTeamsGrid"></div>
+    </div>
+
+    <!-- Detail view -->
+    <div class="sports-content" id="sportsDetail" style="display:none;">
       <div class="sports-header" id="sportsHeader">
-        <img id="yankeesLogo" src="" alt="Yankees" style="display:none;" onerror="this.style.display='none'">
+        <img id="sportsTeamLogo" src="" alt="" style="display:none;" onerror="this.style.display='none'">
         <div class="team-info">
-          <h2>New York Yankees</h2>
-          <div class="team-record" id="yankeesRecord">Loading...</div>
-          <div class="team-standing" id="yankeesStanding"></div>
+          <h2 id="sportsTeamName"></h2>
+          <div class="team-record" id="sportsRecord">Loading...</div>
+          <div class="team-standing" id="sportsStanding"></div>
         </div>
         <div class="sports-refresh">
-          <button onclick="loadYankees()">&#8635; Refresh</button>
+          <button onclick="showSportsRoster()" style="margin-right:8px;">&#8592; All Teams</button>
+          <button onclick="loadTeam(currentSportsTeam.id, currentSportsTeam.sport)">&#8635; Refresh</button>
           <span id="sportsLastUpdated"></span>
         </div>
       </div>
-
       <div class="sports-columns">
-        <div class="sports-col-left" id="sportsBody">
-          <div class="sports-loading">Loading Yankees data...</div>
-        </div>
-        <div class="sports-col-right" id="sportsStats">
-          <div class="sports-loading">Loading stats...</div>
-        </div>
+        <div class="sports-col-left" id="sportsBody"></div>
+        <div class="sports-col-right" id="sportsStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Team Modal -->
+  <div class="modal" id="addTeamModal">
+    <div class="modal-content" style="max-width:480px;">
+      <h3>Follow a Team</h3>
+      <div class="modal-field">
+        <label>Sport</label>
+        <select id="addTeamSport">
+          <option value="baseball/mlb">MLB Baseball</option>
+          <option value="football/nfl">NFL Football</option>
+          <option value="basketball/nba">NBA Basketball</option>
+          <option value="hockey/nhl">NHL Hockey</option>
+          <option value="football/college-football">NCAA Football</option>
+          <option value="baseball/college-baseball">NCAA Baseball</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Search Team</label>
+        <input type="text" id="addTeamSearch" placeholder="e.g. Yankees, Lakers..." oninput="searchTeams()" />
+        <div class="team-search-results" id="teamSearchResults" style="display:none;"></div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeAddTeamModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards Page -->
+  <div class="page" id="page-cards">
+    <div class="cards-content">
+      <div class="cards-header">
+        <h2>Trading Cards</h2>
+        <button class="add-project-btn" onclick="openCardModal()">+ Add Card</button>
+      </div>
+      <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+  </div>
+
+  <!-- Card Modal -->
+  <div class="modal" id="cardModal">
+    <div class="modal-content" style="max-width:520px;">
+      <h3 id="cardModalTitle">Add Card</h3>
+      <div class="modal-field">
+        <label>Card Name / Player</label>
+        <input type="text" id="cardName" placeholder="e.g. Mike Trout" />
+      </div>
+      <div class="modal-field">
+        <label>Set / Year</label>
+        <input type="text" id="cardSet" placeholder="e.g. 2021 Topps Chrome" />
+      </div>
+      <div class="modal-field">
+        <label>Number</label>
+        <input type="text" id="cardNumber" placeholder="e.g. #150 or RC" />
+      </div>
+      <div class="modal-field">
+        <label>Condition</label>
+        <select id="cardCondition">
+          <option value="mint">Mint (PSA 10)</option>
+          <option value="near-mint" selected>Near Mint</option>
+          <option value="excellent">Excellent</option>
+          <option value="good">Good</option>
+          <option value="poor">Poor</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Est. Value ($)</label>
+        <input type="number" id="cardValue" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="modal-field">
+        <label>Notes (optional)</label>
+        <textarea id="cardNotes" placeholder="Rookie card, autograph, parallel, etc."></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Image Filename (optional)</label>
+        <input type="text" id="cardImageInput" placeholder="e.g. trout-2021.jpg" />
+        <small style="color:#aaa;margin-top:4px;display:block;">Place image files in the <code>trading-cards/</code> folder</small>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeCardModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveCard()">Save</button>
       </div>
     </div>
   </div>
@@ -2711,11 +3046,27 @@
     document.getElementById('clipFilename').addEventListener('keydown', e => { if (e.key === 'Enter') addClip(); });
 
     // ── Sports ──
-    const YANKEES_ID = '10';
+    let followedTeams = JSON.parse(localStorage.getItem('followedTeams') || 'null');
+    if (!followedTeams) {
+      followedTeams = [{ id: '10', sport: 'baseball/mlb', name: 'New York Yankees', abbr: 'nyy', logo: '' }];
+      localStorage.setItem('followedTeams', JSON.stringify(followedTeams));
+    }
+    let currentSportsTeam = null;
     let sportsRefreshTimer = null;
+    let teamSearchTimeout = null;
+    const teamSearchCache = {};
+
+    function saveFollowedTeams() { localStorage.setItem('followedTeams', JSON.stringify(followedTeams)); }
+
+    function teamLogoUrl(t) {
+      if (t.logo) return t.logo;
+      if (t.sport === 'baseball/mlb') return `images/mlb_${t.abbr.toLowerCase()}.png`;
+      if (t.sport.includes('college')) return `https://a.espncdn.com/i/teamlogos/ncaa/500/${t.id}.png`;
+      const league = t.sport.split('/')[1];
+      return `https://a.espncdn.com/i/teamlogos/${league}/500/${t.abbr.toLowerCase()}.png`;
+    }
 
     function teamLogo(team) {
-      // Use local file by abbreviation — avoids file:// external image blocking
       const abbr = team?.abbreviation?.toLowerCase();
       if (abbr) return `images/mlb_${abbr}.png`;
       return team?.logo || team?.logos?.[0]?.href || '';
@@ -2727,7 +3078,292 @@
         ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     }
 
+    function renderFollowedTeams() {
+      const grid = document.getElementById('followedTeamsGrid');
+      if (!followedTeams.length) {
+        grid.innerHTML = '<div class="sports-roster-empty">No teams followed yet. Click "+ Follow Team" to add one.</div>';
+        return;
+      }
+      grid.innerHTML = followedTeams.map((t, i) => `
+        <div class="followed-team-card" onclick="openTeamDetail(${i})">
+          <button class="team-card-remove" onclick="event.stopPropagation(); unfollowTeam(${i})" title="Unfollow">✕</button>
+          <img src="${teamLogoUrl(t)}" alt="${escapeHtml(t.name)}" onerror="this.style.display='none'">
+          <div class="team-card-name">${escapeHtml(t.name)}</div>
+          <div class="team-card-sport">${t.sport.split('/')[1].toUpperCase()}</div>
+        </div>
+      `).join('');
+    }
+
+    function unfollowTeam(i) {
+      if (!confirm(`Unfollow ${followedTeams[i].name}?`)) return;
+      followedTeams.splice(i, 1);
+      saveFollowedTeams();
+      renderFollowedTeams();
+    }
+
+    function showSportsRoster() {
+      clearTimeout(sportsRefreshTimer);
+      document.getElementById('sportsRoster').style.display = '';
+      document.getElementById('sportsDetail').style.display = 'none';
+      currentSportsTeam = null;
+    }
+
+    function openTeamDetail(i) {
+      const t = followedTeams[i];
+      currentSportsTeam = t;
+      document.getElementById('sportsRoster').style.display = 'none';
+      document.getElementById('sportsDetail').style.display = '';
+      document.getElementById('sportsTeamName').textContent = t.name;
+      document.getElementById('sportsRecord').textContent = 'Loading...';
+      document.getElementById('sportsStanding').textContent = '';
+      document.getElementById('sportsLastUpdated').textContent = '';
+      document.getElementById('sportsBody').innerHTML = '<div class="sports-loading">Loading...</div>';
+      document.getElementById('sportsStats').innerHTML = '<div class="sports-loading">Loading...</div>';
+      const logo = document.getElementById('sportsTeamLogo');
+      logo.src = teamLogoUrl(t);
+      logo.style.display = 'block';
+      loadTeam(t.id, t.sport);
+    }
+
+    function openAddTeamModal() {
+      document.getElementById('addTeamSearch').value = '';
+      document.getElementById('teamSearchResults').style.display = 'none';
+      document.getElementById('teamSearchResults').innerHTML = '';
+      document.getElementById('addTeamModal').classList.add('active');
+    }
+
+    function closeAddTeamModal() {
+      document.getElementById('addTeamModal').classList.remove('active');
+    }
+
+    async function searchTeams() {
+      clearTimeout(teamSearchTimeout);
+      teamSearchTimeout = setTimeout(async () => {
+        const q = document.getElementById('addTeamSearch').value.trim();
+        const sport = document.getElementById('addTeamSport').value;
+        const resultsEl = document.getElementById('teamSearchResults');
+        if (!q) { resultsEl.style.display = 'none'; return; }
+        resultsEl.style.display = 'block';
+        resultsEl.innerHTML = '<div style="padding:12px;color:#aaa;font-size:0.9rem;">Searching...</div>';
+        try {
+          const extraParams = sport === 'football/college-football' ? '&groups=80&limit=900'
+                           : sport === 'baseball/college-baseball' ? '&groups=11&limit=900'
+                           : '&limit=200';
+          const data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/teams?${extraParams}`).then(r => r.json());
+          const teams = (data.sports?.[0]?.leagues?.[0]?.teams || []).map(t => t.team);
+          const ql = q.toLowerCase();
+          const matches = teams.filter(t =>
+            t.displayName?.toLowerCase().includes(ql) ||
+            t.abbreviation?.toLowerCase().includes(ql) ||
+            t.shortDisplayName?.toLowerCase().includes(ql)
+          ).slice(0, 10);
+          if (!matches.length) {
+            resultsEl.innerHTML = '<div style="padding:12px;color:#aaa;font-size:0.9rem;">No teams found.</div>';
+            return;
+          }
+          matches.forEach(t => { teamSearchCache[t.id + '|' + sport] = t; });
+          resultsEl.innerHTML = matches.map(t => `
+            <div class="team-search-result" onclick="followTeamById('${t.id}','${sport}')">
+              <img src="${t.logos?.[0]?.href || ''}" onerror="this.style.display='none'" alt="">
+              <div>
+                <div class="tsr-name">${escapeHtml(t.displayName)}</div>
+                <div class="tsr-sport">${sport.split('/')[1].toUpperCase()}</div>
+              </div>
+            </div>
+          `).join('');
+        } catch(e) {
+          resultsEl.innerHTML = '<div style="padding:12px;color:#ef4444;font-size:0.9rem;">Search failed.</div>';
+        }
+      }, 350);
+    }
+
+    function followTeamById(id, sport) {
+      const t = teamSearchCache[id + '|' + sport];
+      if (!t) return;
+      const logo = t.logos?.[0]?.href || '';
+      followTeam(id, sport, t.displayName, t.abbreviation, logo);
+    }
+
+    function followTeam(id, sport, name, abbr, logo) {
+      if (followedTeams.some(t => t.id === id && t.sport === sport)) {
+        alert(`${name} already followed.`);
+        return;
+      }
+      followedTeams.push({ id, sport, name, abbr, logo: logo || '' });
+      saveFollowedTeams();
+      renderFollowedTeams();
+      closeAddTeamModal();
+    }
+
+    document.getElementById('addTeamModal').addEventListener('click', e => {
+      if (e.target.id === 'addTeamModal') closeAddTeamModal();
+    });
+
+    async function loadTeam(teamId, sport) {
+      const body = document.getElementById('sportsBody');
+      const statsPanel = document.getElementById('sportsStats');
+      document.getElementById('sportsLastUpdated').textContent = '';
+
+      if (sport === 'baseball/mlb') {
+        await loadYankees_inner(teamId);
+        return;
+      }
+
+      // Generic view for all other sports
+      body.innerHTML = '<div class="sports-loading">Loading...</div>';
+      statsPanel.innerHTML = '<div class="sports-loading">Loading...</div>';
+
+      try {
+        const today = new Date();
+        const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
+        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+
+        const [teamData, sbData, todaySbData] = await Promise.all([
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/teams/${teamId}?enable=schedule`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard`).then(r => r.json()),
+        ]);
+
+        const team = teamData.team;
+        const overallRecord = team.record?.items?.find(r => r.type === 'total');
+        document.getElementById('sportsRecord').textContent = overallRecord ? overallRecord.summary : '';
+        document.getElementById('sportsStanding').textContent = team.standingSummary || '';
+
+        const todayGame = (todaySbData.events || []).find(ev =>
+          ev.competitions?.[0]?.competitors?.some(c => c.id === teamId)
+        );
+        const recentGames = (sbData.events || []).filter(ev =>
+          ev.competitions?.[0]?.competitors?.some(c => c.id === teamId) &&
+          ev.competitions?.[0]?.status?.type?.state !== 'pre'
+        ).slice(-5).reverse();
+
+        let html = '';
+
+        // Next game
+        const nextEvent = team.nextEvent?.[0];
+        if (nextEvent) {
+          const comp = nextEvent.competitions?.[0];
+          const home = comp?.competitors?.find(c => c.homeAway === 'home');
+          const away = comp?.competitors?.find(c => c.homeAway === 'away');
+          html += `<div class="sports-section-title">Next Game</div>
+          <div class="game-card next-game">
+            <div class="game-teams">
+              <div class="matchup">
+                <img src="${teamLogoUrl({sport, id: away?.team?.id, abbr: away?.team?.abbreviation, logo: away?.team?.logos?.[0]?.href||''})}" alt="" onerror="this.style.display='none'" style="width:28px;height:28px;object-fit:contain;">
+                <span>${away?.team?.displayName || ''}</span>
+                <span class="vs">@</span>
+                <img src="${teamLogoUrl({sport, id: home?.team?.id, abbr: home?.team?.abbreviation, logo: home?.team?.logos?.[0]?.href||''})}" alt="" onerror="this.style.display='none'" style="width:28px;height:28px;object-fit:contain;">
+                <span>${home?.team?.displayName || ''}</span>
+              </div>
+              ${comp?.venue?.fullName ? `<div style="font-size:0.8rem;color:#888;margin-top:4px;">${comp.venue.fullName}</div>` : ''}
+            </div>
+            <div class="game-date">${formatGameDate(nextEvent.date)}</div>
+          </div>`;
+        }
+
+        // Live game
+        if (todayGame && todayGame.competitions?.[0]?.status?.type?.state === 'in') {
+          const comp = todayGame.competitions[0];
+          const mine = comp.competitors.find(c => c.id === teamId);
+          const opp  = comp.competitors.find(c => c.id !== teamId);
+          const status = comp.status?.type?.shortDetail || 'Live';
+          html += `<div class="sports-section-title">Live Now</div>
+          <div class="game-card" style="border-color:#22c55e;background:#f0fdf4;">
+            <div class="game-teams">
+              <div class="matchup">
+                <img src="${teamLogoUrl({sport, id: opp?.team?.id, abbr: opp?.team?.abbreviation, logo: opp?.team?.logos?.[0]?.href||''})}" alt="" onerror="this.style.display='none'" style="width:28px;height:28px;object-fit:contain;">
+                <span>${opp?.team?.displayName || 'Opponent'}</span>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:1.6rem;font-weight:700;">${mine?.score ?? '—'} – ${opp?.score ?? '—'}</div>
+              <div style="font-size:0.8rem;color:#16a34a;font-weight:600;">${status}</div>
+            </div>
+          </div>`;
+        }
+
+        // Recent results
+        if (recentGames.length) {
+          html += `<div class="sports-section-title">Recent Games</div>`;
+          recentGames.forEach(ev => {
+            const comp = ev.competitions?.[0];
+            const mine = comp?.competitors?.find(c => c.id === teamId);
+            const opp  = comp?.competitors?.find(c => c.id !== teamId);
+            const won  = mine?.winner;
+            const final = comp?.status?.type?.state === 'post';
+            const score = final ? `${mine?.score} – ${opp?.score}` : '';
+            const result = final ? (won ? 'W' : 'L') : '';
+            const resultColor = won ? '#16a34a' : '#dc2626';
+            html += `<div class="game-card">
+              <div class="game-teams">
+                <div class="matchup">
+                  <img src="${teamLogoUrl({sport, id: opp?.team?.id, abbr: opp?.team?.abbreviation, logo: opp?.team?.logos?.[0]?.href||''})}" alt="" onerror="this.style.display='none'" style="width:28px;height:28px;object-fit:contain;">
+                  <span>${mine?.homeAway === 'away' ? '@ ' : 'vs '}${opp?.team?.displayName || 'Opponent'}</span>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                ${result ? `<div style="font-size:1.1rem;font-weight:700;color:${resultColor};">${result} ${score}</div>` : ''}
+                <div style="font-size:0.8rem;color:#888;">${formatGameDate(ev.date)}</div>
+              </div>
+            </div>`;
+          });
+        }
+
+        if (!html) html = '<div class="sports-loading">No game data available.</div>';
+        body.innerHTML = html;
+
+        // Standings in right panel
+        let standingsHtml = '';
+        try {
+          const standData = await fetch(`https://site.api.espn.com/apis/v2/sports/${sport}/standings`).then(r => r.json());
+          const groups = standData.children || standData.standings?.entries ? [standData] : (standData.children || []);
+          groups.slice(0, 4).forEach(group => {
+            const entries = group.standings?.entries || [];
+            if (!entries.length) return;
+            standingsHtml += `<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:16px;">
+              <div style="padding:12px 16px;font-weight:700;font-size:0.85rem;color:#374151;border-bottom:1px solid #f3f4f6;text-transform:uppercase;letter-spacing:0.05em;">${group.name || 'Standings'}</div>
+              <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                <thead><tr style="background:#f9fafb;">
+                  <th style="text-align:left;padding:8px 12px;font-weight:600;color:#6b7280;">Team</th>
+                  <th style="padding:8px 8px;font-weight:600;color:#6b7280;">W</th>
+                  <th style="padding:8px 8px;font-weight:600;color:#6b7280;">L</th>
+                  <th style="padding:8px 8px;font-weight:600;color:#6b7280;">PCT</th>
+                </tr></thead>
+                <tbody>`;
+            entries.forEach(e => {
+              const isMe = e.team?.id === teamId;
+              const w   = e.stats?.find(s => s.name === 'wins')?.displayValue || '—';
+              const l   = e.stats?.find(s => s.name === 'losses')?.displayValue || '—';
+              const pct = e.stats?.find(s => s.name === 'winPercent' || s.name === 'playoffSeed')?.displayValue || '';
+              standingsHtml += `<tr style="${isMe ? 'background:#eff6ff;font-weight:700;' : ''}border-bottom:1px solid #f3f4f6;">
+                <td style="padding:8px 12px;color:#111;">${escapeHtml(e.team?.displayName || '')}</td>
+                <td style="padding:8px;text-align:center;">${w}</td>
+                <td style="padding:8px;text-align:center;">${l}</td>
+                <td style="padding:8px;text-align:center;">${pct}</td>
+              </tr>`;
+            });
+            standingsHtml += `</tbody></table></div>`;
+          });
+        } catch(e) { /* standings optional */ }
+
+        statsPanel.innerHTML = standingsHtml || '<div class="sports-loading">No standings available.</div>';
+
+        document.getElementById('sportsLastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        clearTimeout(sportsRefreshTimer);
+        sportsRefreshTimer = setTimeout(loadYankees, 60000);
+
+      } catch(err) {
+        body.innerHTML = `<div class="sports-error">Failed to load data.<br><small>${err.message}</small></div>`;
+        statsPanel.innerHTML = '';
+      }
+    }
+
     async function loadYankees() {
+      if (!currentSportsTeam) return;
+      loadTeam(currentSportsTeam.id, currentSportsTeam.sport);
+    }
+
+    async function loadYankees_inner(TEAM_ID) {
       const body = document.getElementById('sportsBody');
       const statsPanel = document.getElementById('sportsStats');
       document.getElementById('sportsLastUpdated').textContent = '';
@@ -2739,7 +3375,7 @@
         const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
 
         const [teamData, sbData, todaySbData] = await Promise.all([
-          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${YANKEES_ID}?enable=schedule`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${TEAM_ID}?enable=schedule`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard`).then(r => r.json()),
         ]);
@@ -2748,32 +3384,63 @@
 
         // Record + logo + standing
         const overallRecord = team.record?.items?.find(r => r.type === 'total');
-        document.getElementById('yankeesRecord').textContent = overallRecord ? overallRecord.summary : '';
-        const logoEl = document.getElementById('yankeesLogo');
-        logoEl.src = 'images/nyy.png';
-        logoEl.style.display = 'block';
-        document.getElementById('yankeesStanding').textContent = team.standingSummary || '';
+        document.getElementById('sportsRecord').textContent = overallRecord ? overallRecord.summary : '';
+        document.getElementById('sportsStanding').textContent = team.standingSummary || '';
 
         // Check today's scoreboard for a live or today Yankees game
         const todayYankeeGame = (todaySbData.events || []).find(ev =>
-          ev.competitions?.[0]?.competitors?.some(c => c.id === YANKEES_ID)
+          ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID)
         );
 
-        // Filter past Yankees games from date-range scoreboard (exclude today's game)
+        // All Yankees games from date range
         const allYankeeGames = (sbData.events || []).filter(ev =>
-          ev.competitions?.[0]?.competitors?.some(c => c.id === YANKEES_ID) &&
-          ev.id !== todayYankeeGame?.id
+          ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID)
         );
-        const yankeeGames = allYankeeGames.slice(-5).reverse();
+
+        // For recent games list: include today's game only if final, avoid duplicating if still live/pre
+        const todayState = todayYankeeGame?.competitions?.[0]?.status?.type?.state;
+        const todayIsFinal = todayState === 'post';
+        const recentGamesPool = [
+          ...allYankeeGames.filter(ev =>
+            ev.id !== todayYankeeGame?.id &&
+            ev.competitions?.[0]?.status?.type?.state !== 'pre'
+          ),
+          ...(todayYankeeGame && todayIsFinal ? [todayYankeeGame] : []),
+        ];
+        const yankeeGames = recentGamesPool.slice(-5).reverse();
 
         let html = '';
         let liveSitData = null;
 
+        // Next scheduled game (always show at top)
+        const nextEvent = team.nextEvent?.[0];
+        if (nextEvent) {
+          const comp = nextEvent.competitions?.[0];
+          const home = comp?.competitors?.find(c => c.homeAway === 'home');
+          const away = comp?.competitors?.find(c => c.homeAway === 'away');
+          const venue = comp?.venue?.fullName || '';
+          html += `<div class="sports-section-title">Next Game</div>`;
+          html += `<div class="game-card next-game">
+            <div class="game-teams">
+              <div class="matchup">
+                <img src="${teamLogo(away?.team)}" alt="${away?.team?.abbreviation || ''}">
+                <span>${away?.team?.displayName || ''}</span>
+                <span class="vs">@</span>
+                <img src="${teamLogo(home?.team)}" alt="${home?.team?.abbreviation || ''}">
+                <span>${home?.team?.displayName || ''}</span>
+              </div>
+              ${venue ? `<div style="font-size:0.8rem;color:#888;margin-top:4px;">${venue}</div>` : ''}
+            </div>
+            <div class="game-date">${formatGameDate(nextEvent.date)}</div>
+            <span class="game-status status-upcoming">Upcoming</span>
+          </div>`;
+        }
+
         // Today's game (live, final, or upcoming today)
         if (todayYankeeGame) {
           const comp = todayYankeeGame.competitions?.[0];
-          const nyy = comp?.competitors?.find(c => c.id === YANKEES_ID);
-          const opp = comp?.competitors?.find(c => c.id !== YANKEES_ID);
+          const nyy = comp?.competitors?.find(c => c.id === TEAM_ID);
+          const opp = comp?.competitors?.find(c => c.id !== TEAM_ID);
           const status = comp?.status?.type;
           const isLive = status?.state === 'in';
           const isFinal = status?.state === 'post';
@@ -2926,30 +3593,6 @@
             ${isLive || isFinal ? `<div class="game-score ${scoreClass}">${nyyScore} – ${oppScore}</div>` : `<div class="game-date">${formatGameDate(todayYankeeGame.date)}</div>`}
             ${statusHtml}
           </div>${liveDetailsHtml}`;
-        } else {
-          // No game today — show next upcoming from team data
-          const nextEvent = team.nextEvent?.[0];
-          if (nextEvent) {
-            const comp = nextEvent.competitions?.[0];
-            const home = comp?.competitors?.find(c => c.homeAway === 'home');
-            const away = comp?.competitors?.find(c => c.homeAway === 'away');
-            const venue = comp?.venue?.fullName || '';
-            html += `<div class="sports-section-title">Next Game</div>`;
-            html += `<div class="game-card next-game">
-              <div class="game-teams">
-                <div class="matchup">
-                  <img src="${teamLogo(away?.team)}" alt="${away?.team?.abbreviation || ''}">
-                  <span>${away?.team?.displayName || ''}</span>
-                  <span class="vs">@</span>
-                  <img src="${teamLogo(home?.team)}" alt="${home?.team?.abbreviation || ''}">
-                  <span>${home?.team?.displayName || ''}</span>
-                </div>
-                ${venue ? `<div style="font-size:0.8rem;color:#888;margin-top:4px;">${venue}</div>` : ''}
-              </div>
-              <div class="game-date">${formatGameDate(nextEvent.date)}</div>
-              <span class="game-status status-upcoming">Upcoming</span>
-            </div>`;
-          }
         }
 
         // Recent games
@@ -2957,8 +3600,8 @@
           html += `<div class="sports-section-title">Recent Games</div>`;
           yankeeGames.forEach(ev => {
             const comp = ev.competitions?.[0];
-            const nyy = comp?.competitors?.find(c => c.id === YANKEES_ID);
-            const opp = comp?.competitors?.find(c => c.id !== YANKEES_ID);
+            const nyy = comp?.competitors?.find(c => c.id === TEAM_ID);
+            const opp = comp?.competitors?.find(c => c.id !== TEAM_ID);
             const status = comp?.status?.type;
             const isLive = status?.state === 'in';
             const isFinal = status?.state === 'post';
@@ -2993,8 +3636,12 @@
         body.innerHTML = html;
         document.getElementById('sportsLastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
-        // ── Player stats: find most recent completed Yankees game ──
-        const lastGame = allYankeeGames.filter(ev =>
+        // ── Player stats: find most recent completed Yankees game (include today if final) ──
+        const allGamesIncludingToday = [
+          ...allYankeeGames,
+          ...(todayYankeeGame && todayIsFinal && !allYankeeGames.find(e => e.id === todayYankeeGame.id) ? [todayYankeeGame] : []),
+        ];
+        const lastGame = allGamesIncludingToday.filter(ev =>
           ev.competitions?.[0]?.status?.type?.state === 'post'
         ).slice(-1)[0];
 
@@ -3012,8 +3659,8 @@
         if (liveSitData) {
           const { sit, playerMap } = liveSitData;
           const liveComp = todayYankeeGame.competitions?.[0];
-          const liveNyy = liveComp?.competitors?.find(c => c.id === YANKEES_ID);
-          const liveOpp = liveComp?.competitors?.find(c => c.id !== YANKEES_ID);
+          const liveNyy = liveComp?.competitors?.find(c => c.id === TEAM_ID);
+          const liveOpp = liveComp?.competitors?.find(c => c.id !== TEAM_ID);
           const liveDetail = liveComp?.status?.type?.shortDetail || '';
 
           // Pull NYY batting + pitching from boxscore
@@ -3109,8 +3756,8 @@
 
           if (nyyBox) {
             const comp = lastGame.competitions?.[0];
-            const nyy = comp?.competitors?.find(c => c.id === YANKEES_ID);
-            const opp = comp?.competitors?.find(c => c.id !== YANKEES_ID);
+            const nyy = comp?.competitors?.find(c => c.id === TEAM_ID);
+            const opp = comp?.competitors?.find(c => c.id !== TEAM_ID);
             const nyyScore = nyy?.score || '0';
             const oppScore = opp?.score || '0';
             const oppAbbr = opp?.team?.abbreviation || '';
@@ -3164,24 +3811,25 @@
 
         statsPanel.innerHTML = statsHtml || `<div class="sports-loading">No data available.</div>`;
 
+        const isCurrentlyLive = !!todayYankeeGame && todayYankeeGame.competitions?.[0]?.status?.type?.state === 'in';
+        clearTimeout(sportsRefreshTimer);
+        sportsRefreshTimer = setTimeout(loadYankees, isCurrentlyLive ? 10000 : 60000);
+
       } catch(err) {
         body.innerHTML = `<div class="sports-error">Failed to load data. Check your connection and try refreshing.<br><small>${err.message}</small></div>`;
         statsPanel.innerHTML = '';
       }
 
-      // auto-refresh every 60s
-      // Refresh every 10s during a live game, 60s otherwise
-      const isCurrentlyLive = !!todayYankeeGame && todayYankeeGame.competitions?.[0]?.status?.type?.state === 'in';
-      clearTimeout(sportsRefreshTimer);
-      sportsRefreshTimer = setTimeout(loadYankees, isCurrentlyLive ? 10000 : 60000);
     }
 
-    // load when tab is clicked
+    // show roster when tab is clicked, stop any running refresh
     const sportsNavBtn = document.querySelector('nav button[onclick*="\'sports\'"]');
     if (sportsNavBtn) {
       const origOnclick = sportsNavBtn.getAttribute('onclick');
-      sportsNavBtn.setAttribute('onclick', origOnclick + '; loadYankees()');
+      sportsNavBtn.setAttribute('onclick', origOnclick + '; showSportsRoster()');
     }
+
+    renderFollowedTeams();
 
     // ── Export / Import ──
     function openDataModal() {
@@ -3238,6 +3886,122 @@
     document.getElementById('dataModal').addEventListener('click', (e) => {
       if (e.target.id === 'dataModal') closeDataModal();
     });
+
+    // ── Trading Cards ──
+    let tradingCards = JSON.parse(localStorage.getItem('tradingCards') || '[]');
+    let editingCardId = null;
+    let cardIdCounter = tradingCards.reduce((max, c) => Math.max(max, c.id || 0), 0);
+
+    function saveCards() {
+      try {
+        localStorage.setItem('tradingCards', JSON.stringify(tradingCards));
+      } catch(e) {
+        alert('Could not save card: ' + e.message);
+      }
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      if (!tradingCards.length) {
+        grid.innerHTML = '<div class="cards-empty">No cards yet. Click "+ Add Card" to get started.</div>';
+        return;
+      }
+      const condLabel = { 'mint': 'Mint', 'near-mint': 'Near Mint', 'excellent': 'Excellent', 'good': 'Good', 'poor': 'Poor' };
+      grid.innerHTML = tradingCards.map(c => `
+        <div class="tcard">
+          ${c.image
+            ? `<img class="tcard-img" src="trading-cards/${escapeHtml(c.image)}" alt="${escapeHtml(c.name)}" onerror="this.style.display='none'">`
+            : `<div class="tcard-img-placeholder">🃏</div>`}
+          <div class="tcard-body">
+            <div class="tcard-name">${escapeHtml(c.name)}</div>
+            ${c.set    ? `<div class="tcard-set">${escapeHtml(c.set)}</div>` : ''}
+            ${c.number ? `<div class="tcard-meta">${escapeHtml(c.number)}</div>` : ''}
+            ${c.notes  ? `<div class="tcard-meta" style="margin-top:4px;font-style:italic;">${escapeHtml(c.notes)}</div>` : ''}
+          </div>
+          <div class="tcard-footer">
+            <span class="tcard-condition cond-${c.condition}">${condLabel[c.condition] || c.condition}</span>
+            <span class="tcard-value">${c.value ? '$' + parseFloat(c.value).toFixed(2) : '—'}</span>
+            <div style="display:flex;gap:6px;">
+              <button onclick="editCard(${c.id})" style="background:none;border:none;cursor:pointer;font-size:1rem;color:#6366f1;" title="Edit">✏️</button>
+              <button onclick="deleteCard(${c.id})" style="background:none;border:none;cursor:pointer;font-size:1rem;color:#ef4444;" title="Delete">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCardModal(id) {
+      editingCardId = id || null;
+      const modal = document.getElementById('cardModal');
+      document.getElementById('cardModalTitle').textContent = id ? 'Edit Card' : 'Add Card';
+      if (id) {
+        const c = tradingCards.find(x => x.id === id);
+        document.getElementById('cardName').value = c.name;
+        document.getElementById('cardSet').value = c.set || '';
+        document.getElementById('cardNumber').value = c.number || '';
+        document.getElementById('cardCondition').value = c.condition;
+        document.getElementById('cardValue').value = c.value || '';
+        document.getElementById('cardNotes').value = c.notes || '';
+        document.getElementById('cardImageInput').value = c.image || '';
+      } else {
+        document.getElementById('cardName').value = '';
+        document.getElementById('cardSet').value = '';
+        document.getElementById('cardNumber').value = '';
+        document.getElementById('cardCondition').value = 'near-mint';
+        document.getElementById('cardValue').value = '';
+        document.getElementById('cardNotes').value = '';
+        document.getElementById('cardImageInput').value = '';
+      }
+      modal.classList.add('active');
+    }
+
+    function closeCardModal() { document.getElementById('cardModal').classList.remove('active'); }
+
+    function saveCard() {
+      const name = document.getElementById('cardName').value.trim();
+      if (!name) { alert('Card name is required.'); return; }
+      const filename = document.getElementById('cardImageInput').value.trim();
+
+      if (editingCardId) {
+        const c = tradingCards.find(x => x.id === editingCardId);
+        c.name = name;
+        c.set = document.getElementById('cardSet').value.trim();
+        c.number = document.getElementById('cardNumber').value.trim();
+        c.condition = document.getElementById('cardCondition').value;
+        c.value = document.getElementById('cardValue').value;
+        c.notes = document.getElementById('cardNotes').value.trim();
+        if (filename) c.image = filename;
+      } else {
+        tradingCards.push({
+          id: ++cardIdCounter,
+          name,
+          set: document.getElementById('cardSet').value.trim(),
+          number: document.getElementById('cardNumber').value.trim(),
+          condition: document.getElementById('cardCondition').value,
+          value: document.getElementById('cardValue').value,
+          notes: document.getElementById('cardNotes').value.trim(),
+          image: filename
+        });
+      }
+      saveCards();
+      renderCards();
+      closeCardModal();
+    }
+
+    function editCard(id) { openCardModal(id); }
+
+    function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      tradingCards = tradingCards.filter(c => c.id !== id);
+      saveCards();
+      renderCards();
+    }
+
+    document.getElementById('cardModal').addEventListener('click', e => {
+      if (e.target.id === 'cardModal') closeCardModal();
+    });
+
+    renderCards();
 
     render();
     renderProjects();
