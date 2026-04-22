@@ -1487,6 +1487,36 @@
       font-size: 0.95rem;
     }
 
+    .schedule-table {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      gap: 8px;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-header {
+      background: var(--bg2);
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .schedule-row.win { background: rgba(22,163,74,0.07); }
+    .schedule-row.loss { background: rgba(220,38,38,0.05); }
+    .schedule-result.win { color: #16a34a; font-weight: 700; }
+    .schedule-result.loss { color: #dc2626; font-weight: 700; }
+    .schedule-matchup { display: flex; align-items: center; gap: 2px; }
+
     .sports-error {
       background: #fee2e2;
       color: #dc2626;
@@ -2039,11 +2069,10 @@
     }
 
     .scores-ticker-track {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 0;
       white-space: nowrap;
-      animation: ticker-scroll 60s linear infinite;
       will-change: transform;
     }
 
@@ -2453,14 +2482,20 @@
           <div class="team-standing" id="sportsStanding"></div>
         </div>
         <div class="sports-refresh">
-          <button onclick="showSportsRoster()" style="margin-right:8px;">&#8592; All Teams</button>
-          <button onclick="loadTeam(currentSportsTeam.id, currentSportsTeam.sport)">&#8635; Refresh</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="showSportsRoster()">&#8592; All Teams</button>
+            <button onclick="showFullSchedule()">&#128197; Full Schedule</button>
+            <button onclick="loadTeam(currentSportsTeam.id, currentSportsTeam.sport)">&#8635; Refresh</button>
+          </div>
           <span id="sportsLastUpdated"></span>
         </div>
       </div>
-      <div class="sports-columns">
+      <div class="sports-columns" id="sportsMainView">
         <div class="sports-col-left" id="sportsBody"></div>
         <div class="sports-col-right" id="sportsStats"></div>
+      </div>
+      <div id="sportsScheduleView" style="display:none;">
+        <div id="sportsScheduleBody"></div>
       </div>
     </div>
   </div>
@@ -3625,11 +3660,88 @@
       currentSportsTeam = null;
     }
 
+    async function showFullSchedule() {
+      document.getElementById('sportsMainView').style.display = 'none';
+      document.getElementById('sportsScheduleView').style.display = '';
+      const body = document.getElementById('sportsScheduleBody');
+      body.innerHTML = '<div class="sports-loading">Loading schedule...</div>';
+      try {
+        const TEAM_ID = '10';
+        const today = new Date();
+        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+        const seasonStart = new Date(today.getFullYear(), 2, 1); // March 1
+        const seasonEnd = new Date(today.getFullYear(), 10, 30); // Nov 30
+        const future = new Date(today); future.setDate(today.getDate() + 30);
+
+        // Fetch season in chunks to avoid limit issues
+        const chunks = [];
+        let cur = new Date(seasonStart);
+        while (cur < seasonEnd) {
+          const end = new Date(cur); end.setDate(cur.getDate() + 20);
+          if (end > seasonEnd) end.setTime(seasonEnd.getTime());
+          chunks.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(cur)}-${fmt(end)}&limit=300`).then(r => r.json()));
+          cur.setDate(cur.getDate() + 21);
+        }
+        const results = await Promise.all(chunks);
+        const seen = new Set();
+        const events = results.flatMap(r => r.events || []).filter(ev => {
+          if (seen.has(ev.id)) return false;
+          seen.add(ev.id);
+          return ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID);
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (!events.length) { body.innerHTML = '<div class="sports-loading">No schedule found.</div>'; return; }
+
+        let html = '<div class="schedule-table">';
+        html += `<div class="schedule-row schedule-header"><span>Date</span><span>Matchup</span><span>Result</span></div>`;
+        events.forEach(ev => {
+          const comp = ev.competitions?.[0];
+          const home = comp?.competitors?.find(c => c.homeAway === 'home');
+          const away = comp?.competitors?.find(c => c.homeAway === 'away');
+          const nyy = comp?.competitors?.find(c => c.id === TEAM_ID);
+          const opp = comp?.competitors?.find(c => c.id !== TEAM_ID);
+          const status = comp?.status?.type;
+          const isFinal = status?.state === 'post';
+          const isLive = status?.state === 'in';
+          const awayScore = parseInt(away?.score);
+          const homeScore = parseInt(home?.score);
+          const won = isFinal && parseInt(nyy?.score) > parseInt(opp?.score);
+          const resultClass = isFinal ? (won ? 'win' : 'loss') : '';
+          const resultText = isFinal
+            ? `${won?'W':'L'} ${awayScore}–${homeScore}`
+            : isLive ? `&#9679; Live`
+            : formatGameDate(ev.date);
+          html += `<div class="schedule-row ${resultClass}">
+            <span class="schedule-date">${new Date(ev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+            <span class="schedule-matchup">
+              <img src="${teamLogo(away?.team)}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">
+              <span style="margin:0 4px;">${away?.team?.abbreviation||''}</span>
+              <span style="color:var(--text2);margin:0 6px;">@</span>
+              <img src="${teamLogo(home?.team)}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">
+              <span style="margin:0 4px;">${home?.team?.abbreviation||''}</span>
+            </span>
+            <span class="schedule-result ${resultClass}">${resultText}</span>
+          </div>`;
+        });
+        html += '</div>';
+        body.innerHTML = html;
+      } catch(e) {
+        body.innerHTML = '<div class="sports-loading">Failed to load schedule.</div>';
+      }
+    }
+
+    function hideFullSchedule() {
+      document.getElementById('sportsMainView').style.display = '';
+      document.getElementById('sportsScheduleView').style.display = 'none';
+    }
+
     function openTeamDetail(i) {
       const t = followedTeams[i];
       currentSportsTeam = t;
       document.getElementById('sportsRoster').style.display = 'none';
       document.getElementById('sportsDetail').style.display = '';
+      document.getElementById('sportsMainView').style.display = '';
+      document.getElementById('sportsScheduleView').style.display = 'none';
       document.getElementById('sportsTeamName').textContent = t.name;
       document.getElementById('sportsRecord').textContent = 'Loading...';
       document.getElementById('sportsStanding').textContent = '';
@@ -4455,13 +4567,19 @@
           return;
         }
 
-        // Duplicate items for seamless infinite scroll
+        // Only rebuild DOM if content changed — avoids animation restart on refresh
         const html = items.join('');
-        track.innerHTML = html + html;
-
-        // Adjust animation duration based on item count (~4s per item)
-        const duration = Math.max(20, items.length * 6);
-        track.style.animationDuration = duration + 's';
+        const newContent = html + html;
+        if (track.dataset.lastContent !== html) {
+          track.dataset.lastContent = html;
+          track.style.animation = 'none';
+          track.innerHTML = newContent;
+          const duration = Math.max(20, items.length * 6);
+          requestAnimationFrame(() => {
+            track.offsetWidth; // force reflow
+            track.style.animation = `ticker-scroll ${duration}s linear infinite`;
+          });
+        }
 
         const hasLive = results.some(({ events }) =>
           events.some(ev => ev.competitions?.[0]?.status?.type?.state === 'in' &&
