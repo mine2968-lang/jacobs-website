@@ -2601,7 +2601,7 @@
   <!-- Anime Edit Modal -->
   <div class="modal" id="animeEditModal">
     <div class="modal-content" style="max-width:400px;">
-      <h3>Edit Status</h3>
+      <h3>Edit Anime</h3>
       <p id="animeEditTitle" style="color:var(--text2);font-size:0.9rem;margin-bottom:16px;"></p>
       <div class="modal-field">
         <label>Status</label>
@@ -2613,6 +2613,10 @@
           <option value="PAUSED">Paused</option>
           <option value="REPEATING">Rewatching</option>
         </select>
+      </div>
+      <div class="modal-field">
+        <label>My Rating (1–10, optional)</label>
+        <input type="number" id="animeEditScore" min="1" max="10" step="0.5" placeholder="e.g. 8.5" />
       </div>
       <div class="modal-buttons">
         <button class="btn-secondary" style="color:#ef4444;" onclick="removeAnime(animeEditingId)">Remove</button>
@@ -3580,7 +3584,7 @@
 
     function teamLogo(team) {
       const abbr = team?.abbreviation?.toLowerCase();
-      if (abbr) return `images/mlb_${abbr}.png`;
+      if (abbr) return `https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/${abbr}.png`;
       return team?.logo || team?.logos?.[0]?.href || '';
     }
 
@@ -3633,7 +3637,9 @@
       document.getElementById('sportsBody').innerHTML = '<div class="sports-loading">Loading...</div>';
       document.getElementById('sportsStats').innerHTML = '<div class="sports-loading">Loading...</div>';
       const logo = document.getElementById('sportsTeamLogo');
-      logo.src = teamLogoUrl(t);
+      logo.src = t.sport === 'baseball/mlb'
+        ? `https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/${t.abbr.toLowerCase()}.png`
+        : teamLogoUrl(t);
       logo.style.display = 'block';
       loadTeam(t.id, t.sport);
     }
@@ -3885,13 +3891,19 @@
       try {
         // Team info + scoreboard in parallel
         const today = new Date();
-        const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
-        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
 
-        const [teamData, sbData, todaySbData] = await Promise.all([
+        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+        const monthAgo = new Date(today); monthAgo.setDate(today.getDate() - 30);
+
+        const future = new Date(today); future.setDate(today.getDate() + 14);
+        const [teamData, sbData1, sbData2, sbData3, sbData4, todaySbData, futureSbData] = await Promise.all([
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${TEAM_ID}?enable=schedule`).then(r => r.json()),
-          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(monthAgo)}-${fmt(new Date(today.getTime() - 22*86400000))}&limit=200`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 21*86400000))}-${fmt(new Date(today.getTime() - 15*86400000))}&limit=200`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 14*86400000))}-${fmt(new Date(today.getTime() - 8*86400000))}&limit=200`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 7*86400000))}-${fmt(today)}&limit=200`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() + 86400000))}-${fmt(future)}&limit=200`).then(r => r.json()),
         ]);
 
         const team = teamData.team;
@@ -3906,10 +3918,19 @@
           ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID)
         );
 
-        // All Yankees games from date range
-        const allYankeeGames = (sbData.events || []).filter(ev =>
-          ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID)
-        );
+        // All Yankees games from combined date-range scoreboards
+        const allEvents = [
+          ...(sbData1.events || []),
+          ...(sbData2.events || []),
+          ...(sbData3.events || []),
+          ...(sbData4.events || []),
+        ];
+        const seen = new Set();
+        const allYankeeGames = allEvents.filter(ev => {
+          if (seen.has(ev.id)) return false;
+          seen.add(ev.id);
+          return ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID);
+        });
 
         // For recent games list: include today's game only if final, avoid duplicating if still live/pre
         const todayState = todayYankeeGame?.competitions?.[0]?.status?.type?.state;
@@ -3921,13 +3942,17 @@
           ),
           ...(todayYankeeGame && todayIsFinal ? [todayYankeeGame] : []),
         ];
-        const yankeeGames = recentGamesPool.slice(-5).reverse();
+        const yankeeGames = recentGamesPool.slice(-10).reverse();
 
         let html = '';
         let liveSitData = null;
 
-        // Next scheduled game (always show at top)
-        const nextEvent = team.nextEvent?.[0];
+        // Next scheduled game — use future scoreboard to get first upcoming Yankees game after today
+        const futureYankeeGames = (futureSbData.events || []).filter(ev =>
+          ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID) &&
+          ev.competitions?.[0]?.status?.type?.state === 'pre'
+        );
+        const nextEvent = futureYankeeGames[0] || (team.nextEvent || []).find(ev => ev.id !== todayYankeeGame?.id);
         if (nextEvent) {
           const comp = nextEvent.competitions?.[0];
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
@@ -4122,8 +4147,16 @@
             const nyyScore = parseInt(nyy?.score || 0);
             const oppScore = parseInt(opp?.score || 0);
             const won = isFinal && nyyScore > oppScore;
-            const homeAway = nyy?.homeAway === 'home' ? 'vs' : '@';
             const scoreClass = isFinal ? (won ? 'win' : 'loss') : '';
+            const nyyIsHome = nyy?.homeAway === 'home';
+            const awayTeam = nyyIsHome ? opp : nyy;
+            const homeTeam = nyyIsHome ? nyy : opp;
+            const awayScore = parseInt(awayTeam?.score || 0);
+            const homeScore = parseInt(homeTeam?.score || 0);
+            const awayLogo = nyyIsHome ? teamLogo(opp?.team) : 'https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/nyy.png';
+            const homeLogo = nyyIsHome ? 'https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/nyy.png' : teamLogo(opp?.team);
+            const awayName = nyyIsHome ? (opp?.team?.shortDisplayName || opp?.team?.abbreviation || '') : 'NYY';
+            const homeName = nyyIsHome ? 'NYY' : (opp?.team?.shortDisplayName || opp?.team?.abbreviation || '');
             let statusHtml = '';
             if (isLive) statusHtml = `<span class="game-status status-live">&#9679; Live — ${status.detail || ''}</span>`;
             else if (isFinal) statusHtml = `<span class="game-status status-final">${won ? 'W' : 'L'} — Final</span>`;
@@ -4132,13 +4165,14 @@
             html += `<div class="game-card">
               <div class="game-teams">
                 <div class="matchup">
-                  <span>NYY</span>
-                  <span class="vs">${homeAway}</span>
-                  <img src="${teamLogo(opp?.team)}" alt="${opp?.team?.abbreviation || ''}">
-                  <span>${opp?.team?.shortDisplayName || opp?.team?.abbreviation || ''}</span>
+                  <img src="${awayLogo}" alt="${awayName}">
+                  <span>${awayName}</span>
+                  <span class="vs">@</span>
+                  <img src="${homeLogo}" alt="${homeName}">
+                  <span>${homeName}</span>
                 </div>
               </div>
-              <div class="game-score ${scoreClass}">${isFinal || isLive ? `${nyyScore} – ${oppScore}` : '–'}</div>
+              <div class="game-score ${scoreClass}">${isFinal || isLive ? `${awayScore} – ${homeScore}` : '–'}</div>
               ${statusHtml}
               <div class="game-date">${formatGameDate(ev.date)}</div>
             </div>`;
@@ -4631,6 +4665,10 @@
             <option value="REPEATING">Rewatching</option>
           </select>
         </div>
+        <div class="modal-field">
+          <label>My Rating (1–10, optional)</label>
+          <input type="number" id="animeScoreSelect" min="1" max="10" step="0.5" placeholder="e.g. 8.5" />
+        </div>
         <div class="modal-buttons">
           <button class="btn-secondary" onclick="backToAnimeSearch()">Back</button>
           <button class="btn-primary" onclick="confirmAddAnime()">Add to List</button>
@@ -4659,11 +4697,13 @@
         return;
       }
       const status = document.getElementById('animeStatusSelect').value;
+      const rawScore = parseFloat(document.getElementById('animeScoreSelect').value);
+      const userScore = (!isNaN(rawScore) && rawScore >= 1 && rawScore <= 10) ? rawScore * 10 : null;
       animeWatchlist.push({
         id: m.id,
         title: m.title.english || m.title.romaji,
         coverImage: m.coverImage.large,
-        score: m.meanScore || null,
+        score: userScore,
         episodes: m.episodes || null,
         format: m.format || '',
         status,
@@ -4697,6 +4737,8 @@
       if (!entry) return;
       document.getElementById('animeEditTitle').textContent = entry.title;
       document.getElementById('animeEditStatus').value = entry.status;
+      const scoreInput = document.getElementById('animeEditScore');
+      scoreInput.value = entry.score != null ? (entry.score / 10).toFixed(1) : '';
       document.getElementById('animeEditModal').classList.add('active');
     }
 
@@ -4709,6 +4751,8 @@
       const entry = animeWatchlist.find(e => e.id === animeEditingId);
       if (!entry) return;
       entry.status = document.getElementById('animeEditStatus').value;
+      const rawScore = parseFloat(document.getElementById('animeEditScore').value);
+      entry.score = (!isNaN(rawScore) && rawScore >= 1 && rawScore <= 10) ? rawScore * 10 : null;
       saveAnimeWatchlist();
       renderAnimeList();
       closeAnimeEditModal();
