@@ -3668,7 +3668,7 @@
       try {
         const TEAM_ID = '10';
         const today = new Date();
-        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+        const fmt = d => d.toLocaleDateString('en-CA').replace(/-/g,'');
         const seasonStart = new Date(today.getFullYear(), 2, 1); // March 1
         const seasonEnd = new Date(today.getFullYear(), 10, 30); // Nov 30
         const future = new Date(today); future.setDate(today.getDate() + 30);
@@ -3848,12 +3848,12 @@
       try {
         const today = new Date();
         const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
-        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+        const fmt = d => d.toLocaleDateString('en-CA').replace(/-/g,'');
 
         const [teamData, sbData, todaySbData] = await Promise.all([
           fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/teams/${teamId}?enable=schedule`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${fmt(weekAgo)}-${fmt(today)}&limit=100`).then(r => r.json()),
-          fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${fmt(today)}`).then(r => r.json()),
         ]);
 
         const team = teamData.team;
@@ -4004,7 +4004,7 @@
         // Team info + scoreboard in parallel
         const today = new Date();
 
-        const fmt = d => d.toISOString().slice(0,10).replace(/-/g,'');
+        const fmt = d => d.toLocaleDateString('en-CA').replace(/-/g,'');
         const monthAgo = new Date(today); monthAgo.setDate(today.getDate() - 30);
 
         const future = new Date(today); future.setDate(today.getDate() + 14);
@@ -4014,7 +4014,7 @@
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 21*86400000))}-${fmt(new Date(today.getTime() - 15*86400000))}&limit=200`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 14*86400000))}-${fmt(new Date(today.getTime() - 8*86400000))}&limit=200`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 7*86400000))}-${fmt(today)}&limit=200`).then(r => r.json()),
-          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(today)}`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(today)}-${fmt(future)}&limit=200`).then(r => r.json()),
         ]);
 
@@ -4066,7 +4066,10 @@
           ev.competitions?.[0]?.status?.type?.state === 'pre'
         );
         const futureCandidate = futureYankeeGames[0];
-        const teamNextCandidate = (team.nextEvent || []).find(ev => ev.id !== todayYankeeGame?.id);
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const teamNextCandidate = (team.nextEvent || []).find(ev =>
+          ev.id !== todayYankeeGame?.id && new Date(ev.date) >= todayStart
+        );
         // Pick whichever is earliest to avoid skipping a game
         let nextEvent;
         if (futureCandidate && teamNextCandidate) {
@@ -4553,9 +4556,10 @@
       }
 
       try {
+        const todayParam = new Date().toLocaleDateString('en-CA').replace(/-/g, ''); // YYYYMMDD local
         const results = await Promise.all(
           [...new Set(followedTeams.map(t => t.sport))].map(sport =>
-            fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard`)
+            fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${todayParam}`)
               .then(r => r.json())
               .then(d => ({ sport, events: d.events || [] }))
               .catch(() => ({ sport, events: [] }))
