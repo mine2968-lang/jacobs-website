@@ -4015,7 +4015,7 @@
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 14*86400000))}-${fmt(new Date(today.getTime() - 8*86400000))}&limit=200`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() - 7*86400000))}-${fmt(today)}&limit=200`).then(r => r.json()),
           fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard`).then(r => r.json()),
-          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(new Date(today.getTime() + 86400000))}-${fmt(future)}&limit=200`).then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${fmt(today)}-${fmt(future)}&limit=200`).then(r => r.json()),
         ]);
 
         const team = teamData.team;
@@ -4061,10 +4061,19 @@
 
         // Next scheduled game — use future scoreboard to get first upcoming Yankees game after today
         const futureYankeeGames = (futureSbData.events || []).filter(ev =>
+          ev.id !== todayYankeeGame?.id &&
           ev.competitions?.[0]?.competitors?.some(c => c.id === TEAM_ID) &&
           ev.competitions?.[0]?.status?.type?.state === 'pre'
         );
-        const nextEvent = futureYankeeGames[0] || (team.nextEvent || []).find(ev => ev.id !== todayYankeeGame?.id);
+        const futureCandidate = futureYankeeGames[0];
+        const teamNextCandidate = (team.nextEvent || []).find(ev => ev.id !== todayYankeeGame?.id);
+        // Pick whichever is earliest to avoid skipping a game
+        let nextEvent;
+        if (futureCandidate && teamNextCandidate) {
+          nextEvent = new Date(futureCandidate.date) <= new Date(teamNextCandidate.date) ? futureCandidate : teamNextCandidate;
+        } else {
+          nextEvent = futureCandidate || teamNextCandidate;
+        }
         if (nextEvent) {
           const comp = nextEvent.competitions?.[0];
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
@@ -4293,9 +4302,6 @@
           html += `<div class="sports-section-title">Recent Games</div><div class="sports-loading">No recent games found.</div>`;
         }
 
-        body.innerHTML = html;
-        document.getElementById('sportsLastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-
         // ── Player stats: find most recent completed Yankees game (include today if final) ──
         const allGamesIncludingToday = [
           ...allYankeeGames,
@@ -4305,12 +4311,14 @@
           ev.competitions?.[0]?.status?.type?.state === 'post'
         ).slice(-1)[0];
 
-        // Fetch box score + standings in parallel
-        const [summaryData, standingsData] = await Promise.all([
+        // Fetch box score + standings + roster + season stats in parallel
+        const [summaryData, standingsData, rosterData, seasonStatsData] = await Promise.all([
           lastGame
             ? fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${lastGame.id}`).then(r => r.json())
             : Promise.resolve(null),
           fetch('https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?level=3').then(r => r.json()),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${TEAM_ID}/roster`).then(r => r.json()).catch(() => null),
+          fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/${TEAM_ID}/statistics`).then(r => r.json()).catch(() => null),
         ]);
 
         let statsHtml = '';
@@ -4469,7 +4477,49 @@
           }
         }
 
-        statsPanel.innerHTML = statsHtml || `<div class="sports-loading">No data available.</div>`;
+        // ── Team Season Stats ──
+        if (seasonStatsData?.results?.stats?.categories?.length) {
+          const cats = seasonStatsData.results.stats.categories;
+          const showBat = ['avg','obp','slg','ops','homeRuns','RBIs','runs','stolenBases','strikeouts','hits','atBats'];
+          const showPit = ['era','wins','losses','saves','inningsPitched','strikeouts','whip','battersFaced'];
+          html += `<div class="sports-section-title">2026 Team Stats</div>`;
+          [['batting','Batting',showBat],['pitching','Pitching',showPit]].forEach(([name, label, keys]) => {
+            const cat = cats.find(c => c.name === name);
+            if (!cat) return;
+            const stats = Object.fromEntries((cat.stats || []).map(s => [s.name, s.displayValue]));
+            const pairs = keys.filter(k => stats[k] !== undefined);
+            if (!pairs.length) return;
+            html += `<div class="stats-sub-title" style="margin:10px 0 4px;">${label}</div>`;
+            html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">`;
+            pairs.forEach(k => {
+              const label2 = k === 'RBIs' ? 'RBI' : k === 'inningsPitched' ? 'IP' : k === 'homeRuns' ? 'HR' : k === 'stolenBases' ? 'SB' : k === 'strikeouts' ? 'K' : k === 'battersFaced' ? 'BF' : k === 'atBats' ? 'AB' : k.toUpperCase();
+              html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:80px;text-align:center;">
+                <div style="font-size:1.1rem;font-weight:700;color:var(--text);">${stats[k]}</div>
+                <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">${label2}</div>
+              </div>`;
+            });
+            html += `</div>`;
+          });
+        }
+
+        // ── Roster ──
+        if (rosterData?.athletes?.length) {
+          html += `<div class="sports-section-title" style="margin-top:8px;">Roster</div>`;
+          rosterData.athletes.forEach(group => {
+            html += `<div class="stats-sub-title" style="margin:10px 0 4px;">${group.position || ''}</div>`;
+            html += `<table class="stats-table"><thead><tr><th>#</th><th>Name</th><th>B/T</th><th>Age</th></tr></thead><tbody>`;
+            (group.items || []).forEach(p => {
+              const bt = (p.batHand?.abbreviation && p.throwHand?.abbreviation) ? `${p.batHand.abbreviation}/${p.throwHand.abbreviation}` : '—';
+              html += `<tr><td>${p.jersey||'—'}</td><td>${p.fullName||p.displayName||''}</td><td>${bt}</td><td>${p.age||'—'}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+          });
+        }
+
+        if (body.dataset.lastHtml !== html) { body.dataset.lastHtml = html; body.innerHTML = html; }
+        const finalStatsHtml = statsHtml || `<div class="sports-loading">No data available.</div>`;
+        if (statsPanel.dataset.lastHtml !== finalStatsHtml) { statsPanel.dataset.lastHtml = finalStatsHtml; statsPanel.innerHTML = finalStatsHtml; }
+        document.getElementById('sportsLastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
         const isCurrentlyLive = !!todayYankeeGame && todayYankeeGame.competitions?.[0]?.status?.type?.state === 'in';
         clearTimeout(sportsRefreshTimer);
