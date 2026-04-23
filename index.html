@@ -4571,7 +4571,6 @@
             if (!comp) return;
             const competitors = comp.competitors || [];
             const hasFollowed = competitors.some(c => followedIds.has(c.id));
-            if (!hasFollowed) return;
 
             const home = competitors.find(c => c.homeAway === 'home');
             const away = competitors.find(c => c.homeAway === 'away');
@@ -4600,7 +4599,7 @@
               : '';
 
             items.push(`
-              <div class="ticker-item">
+              <div class="ticker-item" ${hasFollowed ? 'style="border-left:2px solid var(--accent);padding-left:8px;"' : ''}>
                 ${awayLogo ? `<img src="${awayLogo}" onerror="this.style.display='none'" alt="${escapeHtml(awayAbbr)}">` : `<span>${escapeHtml(awayAbbr)}</span>`}
                 <span style="color:var(--text3);">@</span>
                 ${homeLogo ? `<img src="${homeLogo}" onerror="this.style.display='none'" alt="${escapeHtml(homeAbbr)}">` : `<span>${escapeHtml(homeAbbr)}</span>`}
@@ -4612,28 +4611,42 @@
         });
 
         if (!items.length) {
-          track.innerHTML = '<span class="ticker-loading">No games today for followed teams.</span>';
+          track.innerHTML = '<span class="ticker-loading">No games today.</span>';
           tickerRefreshTimer = setTimeout(refreshTicker, 60000);
           return;
         }
 
-        // Only rebuild DOM if content changed — avoids animation restart on refresh
+        // Rebuild DOM but preserve animation position to avoid visible reset
         const html = items.join('');
         const newContent = html + html;
-        if (track.dataset.lastContent !== html) {
-          track.dataset.lastContent = html;
+        const itemCountChanged = track.dataset.lastItemCount !== String(items.length);
+        track.dataset.lastItemCount = String(items.length);
+
+        if (itemCountChanged || !track.dataset.lastContent) {
+          // Item count changed — must restart animation
           track.style.animation = 'none';
           track.innerHTML = newContent;
           const duration = Math.max(20, items.length * 6);
           requestAnimationFrame(() => {
-            track.offsetWidth; // force reflow
+            track.offsetWidth;
             track.style.animation = `ticker-scroll ${duration}s linear infinite`;
           });
+        } else if (track.dataset.lastContent !== html) {
+          // Only scores/status changed — update text in-place, keep animation running
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = newContent;
+          const newItems = tempDiv.querySelectorAll('.ticker-item');
+          const oldItems = track.querySelectorAll('.ticker-item');
+          newItems.forEach((ni, i) => {
+            if (oldItems[i] && oldItems[i].innerHTML !== ni.innerHTML) {
+              oldItems[i].innerHTML = ni.innerHTML;
+            }
+          });
         }
+        track.dataset.lastContent = html;
 
         const hasLive = results.some(({ events }) =>
-          events.some(ev => ev.competitions?.[0]?.status?.type?.state === 'in' &&
-            ev.competitions?.[0]?.competitors?.some(c => followedIds.has(c.id)))
+          events.some(ev => ev.competitions?.[0]?.status?.type?.state === 'in')
         );
         tickerRefreshTimer = setTimeout(refreshTicker, hasLive ? 15000 : 60000);
 
